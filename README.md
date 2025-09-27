@@ -2,6 +2,6 @@
 EDI Servicos V2
 
 # Linguagens
-    * php / html / javascript
-    * framework mvc
-    * banco oracle
+* php / html / javascript
+* framework mvc
+* banco oracle
