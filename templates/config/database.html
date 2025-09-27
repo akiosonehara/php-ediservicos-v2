@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações de Banco de Dados{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-database"></i> Configurações de Banco de Dados Oracle
+                </h2>
+                <a href="{{ url_for('configuration') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+            <!-- Oracle Configuration -->
+            <div class="col-lg-8 mx-auto mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-database"></i> Oracle 19c
+                        </h5>
+                        <small class="text-light">Configure a conexão usando ServiceName para Oracle 19c</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.oracle_host.label(class="form-label") }}
+                                {{ form.oracle_host(class="form-control") }}
+                                {% if form.oracle_host.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.oracle_host.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.oracle_port.label(class="form-label") }}
+                                {{ form.oracle_port(class="form-control") }}
+                                {% if form.oracle_port.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.oracle_port.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.oracle_service.label(class="form-label") }}
+                                {{ form.oracle_service(class="form-control") }}
+                                {% if form.oracle_service.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.oracle_service.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.oracle_schema.label(class="form-label") }}
+                                {{ form.oracle_schema(class="form-control") }}
+                                {% if form.oracle_schema.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.oracle_schema.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.oracle_username.label(class="form-label") }}
+                                {{ form.oracle_username(class="form-control") }}
+                                {% if form.oracle_username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.oracle_username.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.oracle_password.label(class="form-label") }}
+                                {{ form.oracle_password(class="form-control") }}
+                                {% if form.oracle_password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.oracle_password.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connection String Preview -->
+        <div class="row">
+            <div class="col-lg-8 mx-auto mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-link"></i> String de Conexão Oracle
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="bg-light p-3 rounded mb-3">
+                            <code id="oracle-connection-string">
+                                {% if connection_strings.oracle %}
+                                    {{ connection_strings.oracle }}
+                                {% else %}
+                                    <span class="text-muted">Configure os dados do Oracle para gerar a string de conexão</span>
+                                {% endif %}
+                            </code>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('oracle-connection-string')">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="d-flex gap-2">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <button type="button" class="btn btn-warning" onclick="testConnection('oracle', this)">
+                        <i class="fas fa-plug"></i> Testar Conexão Oracle
+                    </button>
+                    <a href="{{ url_for('configuration') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent;
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('String de conexão copiada!', 'success');
+        }).catch(() => {
+            fallbackCopyToClipboard(text);
+        });
+    } else {
+        fallbackCopyToClipboard(text);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        document.execCommand('copy');
+        showToast('String de conexão copiada!', 'success');
+    } catch (err) {
+        showToast('Erro ao copiar string de conexão', 'danger');
+    }
+
+    document.body.removeChild(textArea);
+}
+
+function testConnection(dbType, buttonElement) {
+    // Get form data
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+
+    // Get button element
+    let btn = buttonElement;
+    if (!btn) {
+        btn = document.querySelector('button[onclick*="testConnection(\'oracle\'"]');
+    }
+
+    if (!btn) {
+        console.error('Botão não encontrado');
+        showToast('Erro interno: botão não encontrado', 'danger');
+        return;
+    }
+
+    // Show loading state
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+    btn.disabled = true;
+
+    // Make request
+    fetch('/configuracoes/testar-oracle', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast(data.message + (data.details ? '<br><small>' + data.details + '</small>' : ''), 'success');
+        } else {
+            showToast(data.message + (data.details ? '<br><small>' + data.details + '</small>' : ''), 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Erro ao testar conexão: ' + error.message, 'danger');
+    })
+    .finally(() => {
+        // Restore button state
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.style.maxWidth = '400px';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        if (toast && toast.parentNode) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+// Update connection string dynamically as user types
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+
+    inputs.forEach(input => {
+        input.addEventListener('input', updateConnectionStrings);
+    });
+
+    // Initial call
+    updateConnectionStrings();
+});
+
+function updateConnectionStrings() {
+    // Oracle
+    const oracleHost = document.querySelector('[name="oracle_host"]').value || 'localhost';
+    const oraclePort = document.querySelector('[name="oracle_port"]').value || '1521';
+    const oracleService = document.querySelector('[name="oracle_service"]').value || 'ORCL';
+    const oracleUsername = document.querySelector('[name="oracle_username"]').value || 'oracle';
+    const oraclePassword = document.querySelector('[name="oracle_password"]').value || 'password';
+    const oracleSchema = document.querySelector('[name="oracle_schema"]').value;
+
+    let oracleConnStr = '';
+    if (oracleHost && oracleService) {
+        oracleConnStr = `oracle+oracledb://${oracleUsername}:${oraclePassword}@${oracleHost}:${oraclePort}/${oracleService}`;
+        if (oracleSchema) {
+            oracleConnStr += `?currentSchema=${oracleSchema}`;
+        }
+    } else {
+        oracleConnStr = 'Configure os dados do Oracle para gerar a string de conexão';
+    }
+
+    document.getElementById('oracle-connection-string').textContent = oracleConnStr;
+}
+</script>
+{% endblock %}

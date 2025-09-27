@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações de Segurança{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Configurações de Segurança</h2>
+        <p class="text-muted">Configure políticas de senha, auditoria e proteções do sistema</p>
+    </div>
+    <a href="{{ url_for('configuration') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div class="row">
+        <!-- Políticas de Senha -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-key"></i> Políticas de Senha
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.min_password_length.label(class="form-label") }}
+                        {{ form.min_password_length(class="form-control") }}
+                        {% if form.min_password_length.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.min_password_length.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.password_expiry_days.label(class="form-label") }}
+                        {{ form.password_expiry_days(class="form-control") }}
+                        {% if form.password_expiry_days.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.password_expiry_days.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h6 class="mt-3 mb-2">Exigências de Caracteres:</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                {{ form.require_uppercase(class="form-check-input") }}
+                                {{ form.require_uppercase.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.require_lowercase(class="form-check-input") }}
+                                {{ form.require_lowercase.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                {{ form.require_numbers(class="form-check-input") }}
+                                {{ form.require_numbers.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.require_special_chars(class="form-check-input") }}
+                                {{ form.require_special_chars.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configurações de Login -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sign-in-alt"></i> Configurações de Login
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.max_login_attempts.label(class="form-label") }}
+                        {{ form.max_login_attempts(class="form-control") }}
+                        {% if form.max_login_attempts.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.max_login_attempts.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.account_lockout_duration.label(class="form-label") }}
+                        {{ form.account_lockout_duration(class="form-control") }}
+                        {% if form.account_lockout_duration.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.account_lockout_duration.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        {{ form.force_password_change(class="form-check-input") }}
+                        {{ form.force_password_change.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.allow_concurrent_sessions(class="form-check-input") }}
+                        {{ form.allow_concurrent_sessions.label(class="form-check-label") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Histórico de Alterações e Monitoramento -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> Histórico de Alterações e Monitoramento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-2">O que registrar no histórico:</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                {{ form.audit_login_success(class="form-check-input") }}
+                                {{ form.audit_login_success.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.audit_login_failure(class="form-check-input") }}
+                                {{ form.audit_login_failure.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.audit_data_changes(class="form-check-input") }}
+                                {{ form.audit_data_changes.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check mb-2">
+                                {{ form.audit_file_operations(class="form-check-input") }}
+                                {{ form.audit_file_operations.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.audit_configuration_changes(class="form-check-input") }}
+                                {{ form.audit_configuration_changes.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controle de Acesso -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt"></i> Controle de Acesso
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.ip_whitelist.label(class="form-label") }}
+                        {{ form.ip_whitelist(class="form-control", rows="4") }}
+                        {% if form.ip_whitelist.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ip_whitelist.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Um IP por linha. Deixe vazio para permitir todos os IPs.</small>
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.block_suspicious_ips(class="form-check-input") }}
+                        {{ form.block_suspicious_ips.label(class="form-check-label") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Configurações de Sessão -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cookie-bite"></i> Configurações de Sessão
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.same_site_cookies.label(class="form-label") }}
+                        {{ form.same_site_cookies(class="form-control") }}
+                        {% if form.same_site_cookies.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.same_site_cookies.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        {{ form.secure_cookies(class="form-check-input") }}
+                        {{ form.secure_cookies.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.httponly_cookies(class="form-check-input") }}
+                        {{ form.httponly_cookies.label(class="form-check-label") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Proteção contra Ataques -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield"></i> Proteção contra Ataques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        {{ form.enable_csrf_protection(class="form-check-input") }}
+                        {{ form.enable_csrf_protection.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        {{ form.rate_limiting(class="form-check-input") }}
+                        {{ form.rate_limiting.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.max_requests_per_minute.label(class="form-label") }}
+                        {{ form.max_requests_per_minute(class="form-control") }}
+                        {% if form.max_requests_per_minute.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.max_requests_per_minute.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Criptografia -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-purple text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock"></i> Criptografia e Hashing
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.password_hash_algorithm.label(class="form-label") }}
+                                {{ form.password_hash_algorithm(class="form-control") }}
+                                {% if form.password_hash_algorithm.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.password_hash_algorithm.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.encryption_key_rotation_days.label(class="form-label") }}
+                                {{ form.encryption_key_rotation_days(class="form-control") }}
+                                {% if form.encryption_key_rotation_days.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.encryption_key_rotation_days.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                {{ form.file_encryption(class="form-check-input") }}
+                                {{ form.file_encryption.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                {{ form.submit(class="btn btn-primary") }}
+                <button type="button" class="btn btn-info" onclick="runSecurityScan()">
+                    <i class="fas fa-search"></i> Varredura de Segurança
+                </button>
+                <button type="button" class="btn btn-warning" onclick="resetSecurityDefaults()">
+                    <i class="fas fa-undo"></i> Restaurar Padrões
+                </button>
+                <a href="{{ url_for('configuration') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Security Status Panel -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Status de Segurança
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-success">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <small class="text-muted">Proteção CSRF</small>
+                            <div class="badge bg-success">Ativo</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-info">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <small class="text-muted">Auditoria</small>
+                            <div class="badge bg-info">Monitorando</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-warning">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <small class="text-muted">Senhas</small>
+                            <div class="badge bg-warning">Política Ativa</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-secondary">
+                                <i class="fas fa-cookie-bite"></i>
+                            </div>
+                            <small class="text-muted">Cookies</small>
+                            <div class="badge bg-secondary">Seguros</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function runSecurityScan() {
+    showToast('Varredura de segurança será implementada em breve', 'info');
+}
+
+function resetSecurityDefaults() {
+    if (confirm('Tem certeza que deseja restaurar as configurações padrão de segurança?')) {
+        showToast('Funcionalidade de restaurar padrões será implementada em breve', 'info');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+</style>
+{% endblock %}

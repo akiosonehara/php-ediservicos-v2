@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações JASPPION{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_jasppion') }}" class="btn btn-warning">
+    <i class="fas fa-plus"></i> Nova Configuração
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <input type="text" name="search" class="form-control" placeholder="Buscar por perfil..." value="{{ search }}" id="search-input" style="max-width: 350px;">
+            <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_jasppion') }}" class="btn btn-outline-danger flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-robot text-warning"></i>
+            Configurações JASPPION (Mainframe)
+        </h5>
+    </div>
+    <div class="card-body">
+
+        {% if configs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Servidor</th>
+                        <th>Porta</th>
+                        <th>URI</th>
+                        <th>Programa</th>
+                        <th>ROSCOE</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for jasppion_config, perfil in configs.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_profile', id=perfil.id_perfil) }}" class="text-decoration-none">
+                                <strong>{{ perfil.perfil }}</strong>
+                            </a>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ jasppion_config.servidor or '-' }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ jasppion_config.porta or '-' }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ jasppion_config.uri[:30] + '...' if jasppion_config.uri and jasppion_config.uri|length > 30 else (jasppion_config.uri or '-') }}
+                            </small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ jasppion_config.programa or '-' }}</small>
+                        </td>
+                        <td>
+                            {% if jasppion_config.roscoe %}
+                                <span class="badge bg-success">Sim</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Não</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-info btn-sm" title="Visualização Rápida" onclick="viewJasppionQuick({{ jasppion_config.id_jasppion }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{{ url_for('edit_jasppion', id=jasppion_config.id_jasppion) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user.is_advanced() %}
+                                <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{{ url_for('delete_jasppion', id=jasppion_config.id_jasppion) }}', '{{ perfil.perfil }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if configs.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if configs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_jasppion', page=configs.prev_num, search=search) }}">Anterior</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in configs.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != configs.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_jasppion', page=page_num, search=search) }}">{{ page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if configs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_jasppion', page=configs.next_num, search=search) }}">Próximo</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-robot fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhuma configuração JASPPION encontrada</h5>
+            <p class="text-muted">
+                {% if search %}
+                    Nenhuma configuração corresponde aos critérios de busca.
+                {% else %}
+                    Clique em "Nova Configuração" para adicionar uma configuração JASPPION.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- JASPPION Configuration Modal -->
+<div class="modal fade" id="jasppionConfigModal" tabindex="-1" aria-labelledby="jasppionConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jasppionConfigModalLabel">Configuração JASPPION</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="jasppionConfigContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewJasppionQuick(configId) {
+    fetch(`/protocolos/jasppion/${configId}/view`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Perfil:</strong> ${data.perfil}<br>
+                        <strong>Servidor:</strong> ${data.servidor || '-'}<br>
+                        <strong>Porta:</strong> ${data.porta || '-'}<br>
+                        <strong>URI:</strong> ${data.uri || '-'}<br>
+                        <strong>Programa:</strong> ${data.programa || '-'}<br>
+                        <strong>App:</strong> ${data.app || '-'}<br>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Logon:</strong> ${data.logon || '-'}<br>
+                        <strong>ROSCOE:</strong> ${data.roscoe ? '<span class="badge bg-success">Sim</span>' : '<span class="badge bg-secondary">Não</span>'}<br>
+                        <strong>R-Code:</strong> ${data.rcode || '-'}<br>
+                        <strong>Delimitador:</strong> ${data.delimitador || '-'}<br>
+                    </div>
+                </div>
+                ${data.mail ? `
+                <hr>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6 class="text-info mb-3">
+                            <i class="fas fa-envelope"></i> Configurações de Email
+                        </h6>
+                        <div class="row">
+                            <div class="row">
+                            <div class="col-md-12">
+                                <strong>Assunto:</strong> ${data.mailass || '-'}<br>
+                                <strong>Anexo:</strong> ${data.mailanexo ? '<span class="text-success">Sim</span>' : '<span class="text-muted">Não</span>'}<br>
+                                ${data.mailmsg ? `
+                                <div class="mt-2 mb-2">
+                                    <strong>Mensagem:</strong><br>
+                                    <div class="border p-2 bg-light rounded" style="max-height: 150px; overflow-y: auto;">
+                                        ${data.mailmsg.replace(/\\n/g, '<br>')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                <strong>Destinatários:</strong><br>
+                                <div class="bg-white p-2 border rounded" style="max-height: 100px; overflow-y: auto;">
+                                    ${data.maildest ? data.maildest.split('\\n').map(email => email.trim()).filter(email => email).map(email => `<div class="mb-1">${email}</div>`).join('') : '<span class="text-muted">Nenhum destinatário</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('jasppionConfigContent').innerHTML = content;
+            const modalElement = document.getElementById('jasppionConfigModal');
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar configuração:', error);
+            alert('Erro ao carregar configuração JASPPION');
+        });
+}
+
+function confirmDelete(url, profileName) {
+    if (confirm(`Tem certeza que deseja excluir a configuração JASPPION do perfil "${profileName}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken.content;
+            form.appendChild(csrfInput);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Clear modal content when hidden to prevent conflicts
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('jasppionConfigModal');
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('jasppionConfigContent').innerHTML = '';
+        });
+    }
+});
+</script>
+{% endblock %}

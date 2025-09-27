@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block page_title %}Usuários{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_user') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Novo Usuário
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control" placeholder="Buscar por usuário ou email..." value="{{ search }}" id="search-input">
+            <button type="submit" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_users') }}" class="btn btn-outline-danger ms-2">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if users.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Email</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Último Login</th>
+                        <th>Data de Criação</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users.items %}
+                    <tr style="cursor: pointer;" onclick="viewUser({{ user.id }})">
+                        <td>
+                            <strong>{{ user.username }}</strong>
+                            {% if user.id == current_user.id %}
+                            <span class="badge bg-primary ms-1">Você</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.user_type == 'avancado' %}
+                            <span class="badge bg-success">Avançado</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Básico</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Nunca' }}</td>
+                        <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') if user.created_at else '-' }}</td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-info" title="Visualizar" onclick="event.stopPropagation(); viewUser({{ user.id }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if current_user.is_advanced() %}
+                                <button class="btn btn-sm btn-outline-warning" title="Editar" onclick="event.stopPropagation(); editUser({{ user.id }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                {% if user.id != current_user.id %}
+                                <button class="btn btn-sm btn-outline-danger" title="Deletar" onclick="event.stopPropagation(); deleteUser({{ user.id }}, '{{ user.username }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if users.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if users.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_users', page=users.prev_num, per_page=request.args.get('per_page', 10), search=search) }}">Anterior</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in users.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != users.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('list_users', page=page_num, per_page=request.args.get('per_page', 10), search=search) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if users.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_users', page=users.next_num, per_page=request.args.get('per_page', 10), search=search) }}">Próxima</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        <div class="text-center text-muted">
+            <small>Total de registros: {{ users.total }} | Página {{ users.page }} de {{ users.pages }}</small>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhum usuário encontrado</h5>
+            {% if search %}
+            <p>Tente ajustar os termos de busca.</p>
+            <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">Limpar Busca</a>
+            {% else %}
+            <p>Comece criando o primeiro usuário do sistema.</p>
+            {% if current_user.is_advanced() %}
+            <a href="{{ url_for('create_user') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Criar Primeiro Usuário
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- User Info Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Informações do Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="userContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o usuário <strong id="userToDelete"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação não pode ser desfeita.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewUser(userId) {
+    window.location.href = `/usuarios/${userId}/visualizar`;
+}
+
+function editUser(userId) {
+    window.location.href = `/usuarios/${userId}/editar`;
+}
+
+function deleteUser(userId, username) {
+    document.getElementById('userToDelete').textContent = username;
+    document.getElementById('deleteForm').action = `/usuarios/${userId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Auto-submit search form on typing (with debounce)
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 500);
+});
+</script>
+{% endblock %}

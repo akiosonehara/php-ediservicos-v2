@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block page_title %}Pendências{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2" id="search-form">
+            <input type="text" class="form-control" name="search" 
+                   value="{{ search or '' }}" 
+                   placeholder="Buscar por BP Name, Parent, BP ID, Destino, Arquivo..." 
+                   id="search-input" style="max-width: 350px;">
+            <button class="btn btn-outline-secondary flex-shrink-0" type="submit">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_pendencias') }}" class="btn btn-outline-danger flex-shrink-0" title="Limpar busca">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-3">
+        <span class="text-muted">
+            <i class="fas fa-info-circle"></i> 
+            Total: {{ pendencias.total }} pendência(s)
+            {% if status_filter == '1' %}
+            <br><small class="text-warning">Filtrado: Apenas pendentes (Status ≠ 0)</small>
+            {% elif status_filter == '2' %}
+            <br><small class="text-info">Filtrado: Detalhes (qualquer Status)</small>
+            {% endif %}
+        </span>
+    </div>
+    <div class="col-md-3 text-end">
+        <div class="d-flex align-items-center justify-content-end gap-2">
+            <label for="status-filter-combo" class="form-label mb-0 text-muted">Filtro:</label>
+            <select class="form-select" id="status-filter-combo" onchange="applyStatusFilter()" style="max-width: 150px;">
+                <option value="0" {% if status_filter == '0' or not status_filter %}selected{% endif %}>Todos</option>
+                <option value="1" {% if status_filter == '1' %}selected{% endif %}>Pendentes</option>
+                <option value="2" {% if status_filter == '2' %}selected{% endif %}>Detalhes</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+{% if pendencias.items %}
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" style="font-size: 0.85rem; white-space: nowrap;">
+                <colgroup>
+                    <col style="width: auto;">  <!-- Ordem -->
+                    <col style="width: auto;"> <!-- Data -->
+                    <col style="width: auto;"> <!-- BP Name -->
+                    <col style="width: auto;"> <!-- Parent -->
+                    <col style="width: auto;">  <!-- BP ID -->
+                    <col style="width: auto;"> <!-- Destino -->
+                    <col style="width: auto;"> <!-- Arquivo -->
+                    <col style="width: auto;">  <!-- Basic Status -->
+                    <col style="width: auto;">  <!-- Status -->
+                </colgroup>
+                <thead class="table-dark">
+                    <tr>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='ordem', direction=('desc' if sort_field=='ordem' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                Ordem
+                                {% if sort_field == 'ordem' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='data', direction=('desc' if sort_field=='data' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                Data
+                                {% if sort_field == 'data' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='bpname', direction=('desc' if sort_field=='bpname' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                BP Name
+                                {% if sort_field == 'bpname' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='parent', direction=('desc' if sort_field=='parent' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                Parent
+                                {% if sort_field == 'parent' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='bpid', direction=('desc' if sort_field=='bpid' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                BP ID
+                                {% if sort_field == 'bpid' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='destino', direction=('desc' if sort_field=='destino' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                Destino
+                                {% if sort_field == 'destino' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='arquivo', direction=('desc' if sort_field=='arquivo' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                Arquivo
+                                {% if sort_field == 'arquivo' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='basic_status', direction=('desc' if sort_field=='basic_status' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                Basic Status
+                                {% if sort_field == 'basic_status' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ url_for('list_pendencias', sort='status', direction=('desc' if sort_field=='status' and sort_direction=='asc' else 'asc'), search=search, status_filter=status_filter) }}" 
+                               class="text-white text-decoration-none">
+                                Status
+                                {% if sort_field == 'status' %}
+                                    {% if sort_direction == 'asc' %}
+                                        <i class="fas fa-sort-up"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort-down"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-sort text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pendencia in pendencias.items %}
+                    <tr>
+                        <td>{{ pendencia.ordem or '-' }}</td>
+                        <td title="{% if pendencia.data %}{% if pendencia.data is string %}{{ pendencia.data }}{% else %}{{ pendencia.data.strftime('%d/%m/%Y %H:%M') }}{% endif %}{% endif %}">
+                            {% if pendencia.data %}
+                                {% if pendencia.data is string %}
+                                {{ pendencia.data }}
+                                {% else %}
+                                {{ pendencia.data.strftime('%d/%m/%Y %H:%M') }}
+                                {% endif %}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td title="{{ pendencia.bpname or '-' }}">
+                            <strong>{{ pendencia.bpname or '-' }}</strong>
+                        </td>
+                        <td title="{{ pendencia.parent or '-' }}">{{ pendencia.parent or '-' }}</td>
+                        <td>
+                            {% if pendencia.bpid %}
+                            <span class="badge bg-info">{{ pendencia.bpid }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td title="{{ pendencia.destino or '-' }}">{{ pendencia.destino or '-' }}</td>
+                        <td title="{{ pendencia.arquivo }}">
+                            {% if pendencia.arquivo %}
+                                {% set primeiro_token = pendencia.arquivo.split('.')[0] %}
+                                {% set perfil_encontrado = perfis_dict.get(primeiro_token) %}
+                                {% if perfil_encontrado %}
+                                <a href="{{ url_for('view_profile', id=perfil_encontrado.id_perfil) }}" class="text-decoration-none text-primary" title="Ver perfil: {{ primeiro_token }}">{{ primeiro_token }}</a>{% if pendencia.arquivo|length > primeiro_token|length %}.{{ pendencia.arquivo[primeiro_token|length + 1:] }}{% endif %}
+                                {% else %}
+                                {{ pendencia.arquivo }}
+                                {% endif %}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pendencia.basic_status %}
+                                {% if pendencia.basic_status == 'SUCCESS' %}
+                                <span class="badge bg-success">{{ pendencia.basic_status }}</span>
+                                {% elif pendencia.basic_status == 'PENDING' %}
+                                <span class="badge bg-warning">{{ pendencia.basic_status }}</span>
+                                {% elif pendencia.basic_status == 'ERROR' %}
+                                <span class="badge bg-danger">{{ pendencia.basic_status }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ pendencia.basic_status }}</span>
+                                {% endif %}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pendencia.status %}
+                                {% if 'SUCCESS' in pendencia.status or 'OK' in pendencia.status %}
+                                <span class="badge bg-success">{{ pendencia.status }}</span>
+                                {% elif 'PENDING' in pendencia.status or 'WAITING' in pendencia.status %}
+                                <span class="badge bg-warning">{{ pendencia.status }}</span>
+                                {% elif 'ERROR' in pendencia.status or 'FAIL' in pendencia.status %}
+                                <span class="badge bg-danger">{{ pendencia.status }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ pendencia.status }}</span>
+                                {% endif %}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if pendencias.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pendencias.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('list_pendencias', page=pendencias.prev_num, search=search, status_filter=status_filter, sort=sort_field, direction=sort_direction) }}">
+                <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+        </li>
+        {% endif %}
+
+        {% for page_num in pendencias.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != pendencias.page %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_pendencias', page=page_num, search=search, status_filter=status_filter, sort=sort_field, direction=sort_direction) }}">{{ page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if pendencias.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('list_pendencias', page=pendencias.next_num, search=search, status_filter=status_filter, sort=sort_field, direction=sort_direction) }}">
+                Próxima <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-clock text-muted" style="font-size: 3rem;"></i>
+        <h5 class="mt-3 text-muted">Nenhuma pendência encontrada</h5>
+        <p class="text-muted">
+            {% if search or (status_filter and status_filter != '0') %}
+            Não foram encontradas pendências com os filtros aplicados.
+            {% if search %}<br>Termo buscado: "{{ search }}"{% endif %}
+            {% if status_filter == '1' %}<br>Status: Apenas pendentes (Status ≠ 0){% elif status_filter == '2' %}<br>Status: Detalhes (qualquer Status){% endif %}
+            <br>
+            <a href="{{ url_for('list_pendencias') }}" class="btn btn-outline-primary mt-2">
+                <i class="fas fa-list"></i> Ver todas as pendências
+            </a>
+            {% else %}
+            Não há pendências cadastradas no sistema.
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Auto-submit search form on Enter key
+document.getElementById('search-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.target.closest('form').submit();
+    }
+});
+
+// Auto-focus on search input
+document.getElementById('search-input').focus();
+
+// Function to apply status filter automatically
+function applyStatusFilter() {
+    const statusCombo = document.getElementById('status-filter-combo');
+    const searchInput = document.getElementById('search-input');
+    const statusValue = statusCombo.value;
+
+    // Build the new URL with current search term and new status filter
+    const currentSearch = searchInput.value || '';
+    const params = new URLSearchParams();
+
+    if (currentSearch) {
+        params.append('search', currentSearch);
+    }
+
+    // The filtering logic needs to be adjusted here.
+    // The original code appends status_filter if it's not '0'.
+    // The requirement is to filter 'Pendentes' (status <> 0) and 'Todos' (any status).
+    // The current combo has values '0' for Todos and '1' for Pendentes.
+    // If statusValue is '1', it means we want Pendentes, which corresponds to status_filter=1.
+    // If statusValue is '0', it means we want Todos, and we should not append status_filter,
+    // or append status_filter=0 to explicitly mean all.
+    // The current implementation for status_filter=0 is "All", which is correct.
+    // For status_filter=1, it means "Pendentes".
+
+    if (statusValue === '1') {
+        params.append('status_filter', '1'); // Filter for Pendentes (status <> 0)
+    } else if (statusValue === '2') {
+        params.append('status_filter', '2'); // Filter for Detalhes (qualquer Status)
+    }
+    // For statusValue === '0' (Todos), don't append status_filter parameter
+
+
+    // Navigate to the new URL
+    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.location.href = newUrl;
+}
+</script>
+{% endblock %}

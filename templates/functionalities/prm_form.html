@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('list_prm') }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Voltar à Lista
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-sliders-h text-primary"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Seleção de Perfil -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select select2-profile") }}
+                                <div class="form-text">Selecione o perfil para esta configuração</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Variáveis V0-V9 -->
+                    <h6 class="text-uppercase text-muted mb-3">Variáveis (V0-V9)</h6>
+                    <div class="row">
+                        {% for i in range(10) %}
+                        <div class="col-md-6 mb-2">
+                            {% set field = form['v' + i|string] %}
+                            {{ field.label(class="form-label small") }}
+                            {{ field(class="form-control form-control-sm") }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Números N0-N9 -->
+                    <h6 class="text-uppercase text-muted mb-3 mt-4">Números (N0-N9)</h6>
+                    <div class="row">
+                        {% for i in range(10) %}
+                        <div class="col-md-6 mb-2">
+                            {% set field = form['n' + i|string] %}
+                            {{ field.label(class="form-label small") }}
+                            {{ field(class="form-control form-control-sm") }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Flags Booleanos -->
+                    <h6 class="text-uppercase text-muted mb-3 mt-4">Configurações</h6>
+                    <div class="row">
+                        {% for field_name in ['bpid', 'dd', 'dsu', 'dsl', 'dru', 'drl', 'mm', 'mru', 'mrl', 'msu', 'msl', 'aal', 'aau'] %}
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check">
+                                {% set field = form[field_name] %}
+                                {{ field(class="form-check-input") }}
+                                {{ field.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('list_prm') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Configuração
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Card -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - Configuração PRM
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">
+                    <strong>Variáveis (V0-V9):</strong> Parâmetros de configuração do tipo variável
+                </p>
+                <p class="small text-muted mb-2">
+                    <strong>Números (N0-N9):</strong> Parâmetros de configuração do tipo numérico
+                </p>
+                <p class="small text-muted mb-0">
+                    <strong>Configurações:</strong> Flags booleanos para controle de funcionalidades
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações PRM{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_prm') }}" class="btn btn-warning">
+    <i class="fas fa-plus"></i> Nova Configuração
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <input type="text" name="search" class="form-control" placeholder="Buscar por perfil..." value="{{ search }}" id="search-input" style="max-width: 350px;">
+            <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_prm') }}" class="btn btn-outline-danger flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-sliders-h text-warning"></i> 
+            Configurações PRM (Parâmetros)
+        </h5>
+    </div>
+    <div class="card-body">
+
+        {% if configs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Variáveis (V0-V4)</th>
+                        <th>Números (N0-N4)</th>
+                        <th>Configurações</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prm_config, perfil in configs.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_profile', id=perfil.id_perfil) }}" class="text-decoration-none">
+                                <strong>{{ perfil.perfil }}</strong>
+                            </a>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {% if prm_config.v0 or prm_config.v1 or prm_config.v2 or prm_config.v3 or prm_config.v4 %}
+                                    {{ [prm_config.v0, prm_config.v1, prm_config.v2, prm_config.v3, prm_config.v4] | select | list | join(', ') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {% if prm_config.n0 or prm_config.n1 or prm_config.n2 or prm_config.n3 or prm_config.n4 %}
+                                    {{ [prm_config.n0, prm_config.n1, prm_config.n2, prm_config.n3, prm_config.n4] | select | list | join(', ') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            {% set flags = [] %}
+                            {% if prm_config.bpid %}{% set _ = flags.append('BPID') %}{% endif %}
+                            {% if prm_config.dd %}{% set _ = flags.append('DD') %}{% endif %}
+                            {% if prm_config.mm %}{% set _ = flags.append('MM') %}{% endif %}
+                            <small class="text-muted">{{ flags | join(', ') if flags else '-' }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-info btn-sm" title="Visualização Rápida" onclick="viewPRMQuick({{ prm_config.id_prm }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{{ url_for('edit_prm', id=prm_config.id_prm) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user.is_advanced() %}
+                                <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{{ url_for('delete_prm', id=prm_config.id_prm) }}', '{{ perfil.perfil }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if configs.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if configs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_prm', page=configs.prev_num, search=search) }}">Anterior</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in configs.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != configs.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_prm', page=page_num, search=search) }}">{{ page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if configs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_prm', page=configs.next_num, search=search) }}">Próximo</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-sliders-h fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhuma configuração PRM encontrada</h5>
+            <p class="text-muted">
+                {% if search %}
+                    Nenhuma configuração corresponde aos critérios de busca.
+                {% else %}
+                    Clique em "Nova Configuração" para adicionar uma configuração PRM.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function confirmDelete(url, profileName) {
+    if (confirm(`Tem certeza que deseja excluir a configuração PRM do perfil "${profileName}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken.content;
+            form.appendChild(csrfInput);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

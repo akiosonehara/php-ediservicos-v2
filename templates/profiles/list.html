@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block page_title %}Perfis{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_profile') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Novo Perfil
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <input type="text" name="search" class="form-control" placeholder="Buscar por nome ou comentário..." value="{{ search }}" id="search-input" style="max-width: 350px;">
+            <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_profiles') }}" class="btn btn-outline-danger flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if profiles.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Protocolos</th>
+                        <th>Comentário</th>
+                        <th>Data de Criação</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in profiles.items %}
+                    <tr style="cursor: pointer;" onclick="window.location='{{ url_for('view_profile', id=profile.id_perfil) }}'">
+                        <td>
+                            <strong>{{ profile.perfil }}</strong>
+                            {% if profile.diagram_filename %}
+                            <i class="fas fa-paperclip text-info ms-1" title="Possui diagrama"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set protocols = [] %}
+                            {% if profile.ftp %}{% set _ = protocols.append('<i class="fas fa-upload text-info" title="FTP"></i>') %}{% endif %}
+                            {% if profile.scp %}{% set _ = protocols.append('<i class="fas fa-shield-alt text-success" title="SCP"></i>') %}{% endif %}
+                            {% if profile.cd %}{% set _ = protocols.append('<i class="fas fa-exchange-alt text-warning" title="Connect:Direct"></i>') %}{% endif %}
+                            {% if profile.http %}{% set _ = protocols.append('<i class="fas fa-globe text-primary" title="HTTP"></i>') %}{% endif %}
+                            {% if profile.jasppion %}{% set _ = protocols.append('<i class="fas fa-robot text-secondary" title="JASPPION"></i>') %}{% endif %}
+                            {% if profile.s3 %}{% set _ = protocols.append('<i class="fab fa-aws text-warning" title="S3"></i>') %}{% endif %}
+                            {% if profile.mq %}{% set _ = protocols.append('<i class="fas fa-comments text-warning" title="MQ"></i>') %}{% endif %}
+                            {{ protocols|join(' ')|safe }}
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ profile.comentario[:50] + '...' if profile.comentario and profile.comentario|length > 50 else (profile.comentario or '-') }}</small>
+                        </td>
+                        <td>{{ profile.created_at.strftime('%d/%m/%Y %H:%M') if profile.created_at else '-' }}</td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-info" title="Visualização Rápida" onclick="event.stopPropagation(); viewProfileQuick({{ profile.id_perfil }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if current_user.is_advanced() %}
+                                <a href="{{ url_for('edit_profile', id=profile.id_perfil) }}" class="btn btn-sm btn-outline-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-success" title="Duplicar" onclick="event.stopPropagation(); duplicateProfile({{ profile.id_perfil }})">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Deletar" onclick="event.stopPropagation(); deleteProfile({{ profile.id_perfil }}, '{{ profile.perfil }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if profiles.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if profiles.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_profiles', page=profiles.prev_num, per_page=request.args.get('per_page', 10), search=search) }}">Anterior</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in profiles.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != profiles.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('list_profiles', page=page_num, per_page=request.args.get('per_page', 10), search=search) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if profiles.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_profiles', page=profiles.next_num, per_page=request.args.get('per_page', 10), search=search) }}">Próxima</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        <div class="text-center text-muted">
+            <small>Total de registros: {{ profiles.total }} | Página {{ profiles.page }} de {{ profiles.pages }}</small>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-user-circle fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhum perfil encontrado</h5>
+            {% if search %}
+            <p>Tente ajustar os termos de busca.</p>
+            <a href="{{ url_for('list_profiles') }}" class="btn btn-outline-secondary">Limpar Busca</a>
+            {% else %}
+            <p>Comece criando seu primeiro perfil de transferência.</p>
+            {% if current_user.is_advanced() %}
+            <a href="{{ url_for('create_profile') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Criar Primeiro Perfil
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o perfil <strong id="profileToDelete"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação não pode ser desfeita, mas pode ser restaurada através do histórico de alterações.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteProfile(profileId, profileName) {
+    document.getElementById('profileToDelete').textContent = profileName;
+    document.getElementById('deleteForm').action = `/perfis/${profileId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function duplicateProfile(profileId) {
+    if (confirm('Deseja duplicar este perfil? Uma cópia será criada com todas as configurações.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/perfis/${profileId}/duplicar`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Auto-submit search form on typing (with debounce)
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 500);
+});
+</script>
+{% endblock %}

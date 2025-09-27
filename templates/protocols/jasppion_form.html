@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-robot text-secondary"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select", id="perfil_select") }}
+                                {% if form.perfil_id.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.perfil_id.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Connection Settings -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configurações de Conexão</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.servidor.label(class="form-label") }}
+                                {{ form.servidor(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.porta.label(class="form-label") }}
+                                {{ form.porta(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.uri.label(class="form-label") }}
+                                {{ form.uri(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mainframe Settings -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configurações Mainframe</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.app.label(class="form-label") }}
+                                {{ form.app(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.fsadabas.label(class="form-label") }}
+                                {{ form.fsadabas(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.programa.label(class="form-label") }}
+                                {{ form.programa(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.logon.label(class="form-label") }}
+                                {{ form.logon(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.roscoe.label(class="form-label") }}
+                                {{ form.roscoe(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.rcode.label(class="form-label") }}
+                                {{ form.rcode(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Format -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Formato de Dados</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.delimitador.label(class="form-label") }}
+                                {{ form.delimitador(class="form-control") }}
+                                <div class="form-text">Delimitador usado para separar campos nos dados</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configurações de Email</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mail(class="form-check-input", id="mail-checkbox") }}
+                                    {{ form.mail.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Ativar notificações por email</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mailanexo(class="form-check-input") }}
+                                    {{ form.mailanexo.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Enviar arquivos como anexo</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailass.label(class="form-label") }}
+                                {{ form.mailass(class="form-control", placeholder="Assunto do email de notificação") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.maildest.label(class="form-label") }}
+                                {{ form.maildest(class="form-control", rows="3", placeholder="Lista de destinatários separados por vírgula ou quebra de linha") }}
+                                <small class="form-text text-muted">Ex: admin@empresa.com, usuario@empresa.com</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailmsg.label(class="form-label") }}
+                                {{ form.mailmsg(class="form-control", rows="4", placeholder="Mensagem personalizada do email") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-secondary">
+                                <i class="fas fa-save"></i> Salvar Configuração
+                            </button>
+                            <a href="{{ url_for('list_jasppion') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - JASPPION
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Campos de Conexão:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Servidor:</strong> Endereço do servidor mainframe</li>
+                    <li><strong>Porta:</strong> Porta de conexão</li>
+                    <li><strong>URI:</strong> Caminho do serviço</li>
+                </ul>
+                
+                <h6>Configurações Mainframe:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>App:</strong> ID da aplicação (4 dígitos)</li>
+                    <li><strong>FS Adabas:</strong> File System Adabas</li>
+                    <li><strong>Programa:</strong> Nome do programa (8 chars)</li>
+                    <li><strong>Logon:</strong> ID de logon do usuário</li>
+                    <li><strong>Roscoe:</strong> Sessão Roscoe</li>
+                    <li><strong>R Code:</strong> Código de retorno</li>
+                </ul>
+                
+                <h6>Formato:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Delimitador:</strong> Caractere para separar campos</li>
+                </ul>
+                
+                <div class="alert alert-info mt-3">
+                    <small><i class="fas fa-info-circle"></i> JASPPION é um protocolo especializado para integração com sistemas mainframe de pagamento.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for profile selection with search
+    $('#perfil_select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Selecione um perfil...',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "Nenhum perfil encontrado";
+            },
+            searching: function() {
+                return "Procurando...";
+            },
+            inputTooShort: function() {
+                return "Digite para buscar";
+            }
+        }
+    });
+
+    // Toggle mail configuration section
+    function toggleMailConfiguration() {
+        const mailCheckbox = document.getElementById('mail-checkbox');
+        const mailConfig = document.getElementById('mailConfiguration');
+
+        if (mailCheckbox && mailConfig) {
+            if (mailCheckbox.checked) {
+                mailConfig.style.display = 'block';
+            } else {
+                mailConfig.style.display = 'none';
+            }
+        }
+    }
+
+    // Email configuration setup
+    const mailCheckbox = document.getElementById('mail-checkbox');
+    const mailConfig = document.getElementById('mailConfiguration');
+    
+    if (mailCheckbox && mailConfig) {
+        // Check initial state and show/hide accordingly
+        if (mailCheckbox.checked) {
+            mailConfig.style.display = 'block';
+        } else {
+            mailConfig.style.display = 'none';
+        }
+
+        // Add change event listener
+        mailCheckbox.addEventListener('change', function() {
+            toggleMailConfiguration();
+        });
+    }
+});
+</script>
+{% endblock %}

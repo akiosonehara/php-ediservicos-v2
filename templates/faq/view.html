@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ faq.pergunta[:50] }}...{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Início</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('list_faq') }}">FAQ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Visualizar</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{{ url_for('list_faq') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+    {% if current_user.is_advanced() %}
+    <a href="{{ url_for('edit_faq', id=faq.id) }}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Editar
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        FAQ - Pergunta Frequente
+                    </h5>
+                    <span class="badge bg-light text-dark">{{ faq.categoria }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Pergunta -->
+                <div class="mb-4">
+                    <h6 class="text-primary mb-2">
+                        <i class="fas fa-question me-2"></i>Pergunta
+                    </h6>
+                    <div class="p-3 bg-light rounded">
+                        <h5 class="mb-0">{{ faq.pergunta }}</h5>
+                    </div>
+                </div>
+
+                <!-- Resposta -->
+                <div class="mb-4">
+                    <h6 class="text-success mb-2">
+                        <i class="fas fa-lightbulb me-2"></i>Resposta
+                    </h6>
+                    <div class="p-3 border rounded">
+                        <div class="faq-answer">
+                            {{ faq.resposta|nl2br|safe }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem (se existir) -->
+                {% if faq.imagem_filename %}
+                <div class="mb-4">
+                    <h6 class="text-info mb-2">
+                        <i class="fas fa-image me-2"></i>Imagem Anexa
+                    </h6>
+                    <div class="text-center">
+                        <img src="{{ url_for('uploaded_file', filename=faq.imagem_filename) }}" 
+                             class="img-fluid img-thumbnail" 
+                             style="max-height: 400px;"
+                             alt="Imagem FAQ">
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Informações da FAQ -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-info-circle me-2"></i>Informações
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Categoria:</strong></td>
+                                    <td>{{ faq.categoria }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ID:</strong></td>
+                                    <td>{{ faq.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Criado em:</strong></td>
+                                    <td>{{ faq.created_at.strftime('%d/%m/%Y %H:%M') if faq.created_at else '-' }}{% if faq.criado_por %}, por {{ faq.criado_por }}{% endif %}</td>
+                                </tr>
+                                {% if faq.updated_at and faq.updated_at != faq.created_at %}
+                                <tr>
+                                    <td><strong>Atualizado em:</strong></td>
+                                    <td>{{ faq.updated_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-cogs me-2"></i>Ações Rápidas
+                        </h6>
+                        <div class="d-grid gap-2">
+                            {% if current_user.is_advanced() %}
+                            <a href="{{ url_for('edit_faq', id=faq.id) }}" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar FAQ
+                            </a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteFaq({{ faq.id }}, '{{ faq.pergunta[:30] }}...')">
+                                <i class="fas fa-trash"></i> Excluir FAQ
+                            </button>
+                            {% endif %}
+                            <a href="{{ url_for('list_faq') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-list"></i> Listar Todas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a FAQ <strong id="faqToDelete"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação não pode ser desfeita, mas pode ser restaurada através do histórico de alterações.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteFaq(faqId, faqTitle) {
+    document.getElementById('faqToDelete').textContent = faqTitle;
+    document.getElementById('deleteForm').action = `/faq/${faqId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações CMD{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_cmd') }}" class="btn btn-dark">
+    <i class="fas fa-plus"></i> Nova Configuração
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <input type="text" class="form-control" name="search" 
+                   value="{{ search or '' }}" 
+                   placeholder="Buscar por perfil ou comando..." 
+                   id="search-input" style="max-width: 350px;">
+            <button class="btn btn-outline-secondary flex-shrink-0" type="submit">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_cmd') }}" class="btn btn-outline-danger flex-shrink-0" title="Limpar busca">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-terminal text-dark"></i> 
+            Configurações CMD
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if configs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Comando</th>
+                        <th width="120">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cmd_config, perfil in configs.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_profile', id=perfil.id_perfil) }}" class="text-decoration-none">
+                                <i class="fas fa-user-circle text-primary"></i> {{ perfil.perfil }}
+                            </a>
+                        </td>
+                        <td>
+                            <code>{{ (cmd_config.comando[:60] + '...') if cmd_config.comando and cmd_config.comando|length > 60 else (cmd_config.comando or '-') }}</code>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-info" title="Visualizar" onclick="viewCMDConfig({{ cmd_config.id_cmd }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if current_user.is_advanced() %}
+                                <button class="btn btn-sm btn-outline-warning" title="Editar" onclick="editCMDConfig({{ cmd_config.id_cmd }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" title="Deletar" onclick="deleteCMDConfig({{ cmd_config.id_cmd }}, '{{ perfil.perfil }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if configs.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if configs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_cmd', page=configs.prev_num, search=search) }}">Anterior</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in configs.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != configs.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('list_cmd', page=page_num, search=search) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if configs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_cmd', page=configs.next_num, search=search) }}">Próximo</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        <div class="text-center text-muted">
+            <small>Total de registros: {{ configs.total }} | Página {{ configs.page }} de {{ configs.pages }}</small>
+        </div>
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-terminal fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhuma configuração CMD encontrada</h5>
+            {% if search %}
+            <p>Tente ajustar os termos de busca.</p>
+            <a href="{{ url_for('list_cmd') }}" class="btn btn-outline-secondary">Limpar Busca</a>
+            {% else %}
+            <p>Comece criando sua primeira configuração CMD.</p>
+            {% if current_user.is_advanced() %}
+            <a href="{{ url_for('create_cmd') }}" class="btn btn-dark">
+                <i class="fas fa-plus"></i> Criar Primeira Configuração
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a configuração CMD do perfil <strong id="configToDelete"></strong>?</p>
+                <p class="text-muted">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- CMD Configuration Modal -->
+<div class="modal fade" id="cmdConfigModal" tabindex="-1" aria-labelledby="cmdConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cmdConfigModalLabel">Configuração CMD</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cmdConfigContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewCMDConfig(configId) {
+    fetch(`/funcionalidades/cmd/${configId}/view`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="row">
+                    <div class="col-md-12">
+                        <strong>Perfil:</strong> ${data.perfil}<br>
+                        <strong>Comando:</strong> ${data.comando || '-'}<br>
+                    </div>
+                </div>
+            `;
+            document.getElementById('cmdConfigContent').innerHTML = content;
+            const modal = new bootstrap.Modal(document.getElementById('cmdConfigModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar configuração:', error);
+            alert('Erro ao carregar configuração CMD');
+        });
+}
+
+function editCMDConfig(configId) {
+    window.location.href = `/funcionalidades/cmd/${configId}/editar`;
+}
+
+function deleteCMDConfig(configId, perfilName) {
+    document.getElementById('configToDelete').textContent = perfilName;
+    document.getElementById('deleteForm').action = `/funcionalidades/cmd/${configId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Auto-submit search form on typing (with debounce)
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 500);
+});
+</script>
+{% endblock %}

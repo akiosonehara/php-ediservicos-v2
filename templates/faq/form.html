@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle text-primary"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.categoria.label(class="form-label") }}
+                        <select class="form-select" id="categoria" name="categoria" required>
+                            <option value="">Selecione ou digite uma nova categoria...</option>
+                            {% for categoria in categorias_existentes %}
+                            <option value="{{ categoria }}" {% if faq and faq.categoria == categoria %}selected{% endif %}>{{ categoria }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.categoria.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.categoria.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Selecione uma categoria existente ou digite uma nova. Ex: Geral, Protocolos, Configuração, Troubleshooting</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.pergunta.label(class="form-label") }}
+                        {{ form.pergunta(class="form-control") }}
+                        {% if form.pergunta.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.pergunta.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.resposta.label(class="form-label") }}
+                        {{ form.resposta(class="form-control", rows="6") }}
+                        {% if form.resposta.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.resposta.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Você pode usar quebras de linha para formatar a resposta.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.imagem.label(class="form-label") }}
+                        {{ form.imagem(class="form-control") }}
+                        {% if form.imagem.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.imagem.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if faq and faq.imagem_filename %}
+                        <small class="text-muted">
+                            Imagem atual: {{ faq.imagem_filename }}
+                            <a href="{{ url_for('uploaded_file', filename=faq.imagem_filename) }}" target="_blank">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <a href="{{ url_for('list_faq') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#categoria').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Selecione ou digite uma nova categoria...',
+        allowClear: true,
+        tags: true,
+        createTag: function (params) {
+            var term = $.trim(params.term);
+            if (term === '') {
+                return null;
+            }
+            return {
+                id: term,
+                text: term + ' (nova categoria)',
+                newTag: true
+            };
+        },
+        templateResult: function (data) {
+            var $result = $('<span></span>');
+            $result.text(data.text);
+            if (data.newTag) {
+                $result.append(' <em>(nova categoria)</em>');
+            }
+            return $result;
+        },
+        templateSelection: function (data) {
+            if (data.newTag) {
+                return data.id;
+            }
+            return data.text;
+        }
+    });
+});
+</script>
+{% endblock %}

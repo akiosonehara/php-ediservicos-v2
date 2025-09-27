@@ -1,0 +1,395 @@
+
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments text-info"></i>
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="mq-form">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.perfil_id.label(class="form-label") }} <span class="text-danger">*</span>
+                        {{ form.perfil_id(class="form-select") }}
+                        {% if form.perfil_id.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.perfil_id.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.hostname.label(class="form-label") }} <span class="text-danger">*</span>
+                                {{ form.hostname(class="form-control") }}
+                                {% if form.hostname.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.hostname.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.port.label(class="form-label") }} <span class="text-danger">*</span>
+                                {{ form.port(class="form-control", value="1414") }}
+                                {% if form.port.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.port.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.channel.label(class="form-label") }} <span class="text-danger">*</span>
+                                {{ form.channel(class="form-control") }}
+                                {% if form.channel.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.channel.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.userid.label(class="form-label") }} <span class="text-danger">*</span>
+                                {{ form.userid(class="form-control") }}
+                                {% if form.userid.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.userid.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.passwd.label(class="form-label") }}
+                                {{ form.passwd(class="form-control", type="password") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.qmgr.label(class="form-label") }}
+                                {{ form.qmgr(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.qname.label(class="form-label") }}
+                                {{ form.qname(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.action.label(class="form-label") }}
+                                {{ form.action(class="form-select") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.gettype.label(class="form-label") }}
+                                {{ form.gettype(class="form-select") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.msgtype.label(class="form-label") }}
+                                {{ form.msgtype(class="form-select") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.msgid.label(class="form-label") }}
+                                {{ form.msgid(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.ccsid.label(class="form-label") }}
+                                {{ form.ccsid(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.ttl.label(class="form-label") }}
+                                {{ form.ttl(class="form-control") }}
+                                {% if form.ttl.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.ttl.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.tls.label(class="form-label") }}
+                                {{ form.tls(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.cert.label(class="form-label") }}
+                                {{ form.cert(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SSL and Email Options -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Opções de Segurança e Email</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.ssl(class="form-check-input") }}
+                                    {{ form.ssl.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Usar conexão SSL/TLS</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mail(class="form-check-input") }}
+                                    {{ form.mail.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Ativar notificações por email</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mailanexo(class="form-check-input") }}
+                                    {{ form.mailanexo.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Enviar arquivos como anexo</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailass.label(class="form-label") }}
+                                {{ form.mailass(class="form-control", placeholder="Assunto do email de notificação") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.maildest.label(class="form-label") }}
+                                {{ form.maildest(class="form-control", rows="3", placeholder="Lista de destinatários separados por vírgula ou quebra de linha") }}
+                                <small class="form-text text-muted">Ex: admin@empresa.com, usuario@empresa.com</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailmsg.label(class="form-label") }}
+                                {{ form.mailmsg(class="form-control", rows="4", placeholder="Mensagem personalizada do email") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <a href="{{ url_for('list_mq') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Informações
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>IBM MQ Configuration</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Hostname:</strong> Servidor MQ</li>
+                    <li><strong>Port:</strong> Porta padrão 1414</li>
+                    <li><strong>Channel:</strong> Canal de comunicação</li>
+                    <li><strong>User ID:</strong> Usuário para conexão</li>
+                    <li><strong>Queue Manager:</strong> Gerenciador de filas</li>
+                    <li><strong>Queue Name:</strong> Nome da fila</li>
+                    <li><strong>Action:</strong> GET/PUT operations</li>
+                    <li><strong>SSL:</strong> Conexão segura</li>
+                    <li><strong>TTL:</strong> Tempo de vida da mensagem</li>
+                </ul>
+
+                <div class="mt-3">
+                    <h6>Configurações de Email</h6>
+                    <ul class="list-unstyled small">
+                        <li><strong>Mail:</strong> Ativa notificações por email</li>
+                        <li><strong>Mail Subject:</strong> Assunto do email</li>
+                        <li><strong>Mail Destinations:</strong> Lista de destinatários</li>
+                        <li><strong>Mail Message:</strong> Corpo da mensagem</li>
+                        <li><strong>Mail Attachment:</strong> Incluir anexos</li>
+                    </ul>
+                </div>
+
+                {% if mq_config %}
+                <hr>
+                <h6>Perfil Atual</h6>
+                <p class="small">
+                    <i class="fas fa-user-circle text-primary"></i>
+                    {{ mq_config.perfil.perfil }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Toggle mail configuration section
+function toggleMailConfiguration() {
+    const mailCheckbox = document.getElementById('mail-checkbox');
+    const mailConfig = document.getElementById('mailConfiguration');
+
+    console.log('Toggling mail configuration:', mailCheckbox?.checked);
+
+    if (mailCheckbox && mailConfig) {
+        if (mailCheckbox.checked) {
+            mailConfig.style.display = 'block';
+            console.log('Mail fields shown');
+        } else {
+            mailConfig.style.display = 'none';
+            console.log('Mail fields hidden');
+        }
+    }
+}
+
+// Add event listener for mail checkbox
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('MQ Form DOM loaded - setting up mail toggle');
+    
+    const mailCheckbox = document.getElementById('mail-checkbox');
+    const mailConfig = document.getElementById('mailConfiguration');
+    
+    console.log('Mail checkbox found:', !!mailCheckbox);
+    console.log('Mail config section found:', !!mailConfig);
+    
+    if (mailCheckbox && mailConfig) {
+        // Check initial state and show/hide accordingly
+        console.log('Initial mail checkbox state:', mailCheckbox.checked);
+        
+        if (mailCheckbox.checked) {
+            mailConfig.style.display = 'block';
+        } else {
+            mailConfig.style.display = 'none';
+        }
+
+        // Add change event listener
+        mailCheckbox.addEventListener('change', function() {
+            console.log('Mail checkbox changed to:', this.checked);
+            toggleMailConfiguration();
+        });
+    }
+    
+    // Setup form validation
+    const form = document.getElementById('mq-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const hostname = document.querySelector('input[name="hostname"]');
+            const port = document.querySelector('input[name="port"]');
+            const channel = document.querySelector('input[name="channel"]');
+            const userid = document.querySelector('input[name="userid"]');
+            
+            if (!hostname.value.trim()) {
+                e.preventDefault();
+                showToast('Hostname é obrigatório', 'error');
+                hostname.focus();
+                return false;
+            }
+            
+            if (!port.value || port.value < 1 || port.value > 65535) {
+                e.preventDefault();
+                showToast('Porta deve estar entre 1 e 65535', 'error');
+                port.focus();
+                return false;
+            }
+            
+            if (!channel.value.trim()) {
+                e.preventDefault();
+                showToast('Channel é obrigatório', 'error');
+                channel.focus();
+                return false;
+            }
+            
+            if (!userid.value.trim()) {
+                e.preventDefault();
+                showToast('User ID é obrigatório', 'error');
+                userid.focus();
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

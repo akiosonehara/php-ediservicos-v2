@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block page_title %}Perfil: {{ profile.perfil }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{{ url_for('list_profiles') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+    {% if current_user.is_advanced() %}
+    <a href="{{ url_for('edit_profile', id=profile.id_perfil) }}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Editar
+    </a>
+    <button type="button" class="btn btn-success" onclick="duplicateProfile({{ profile.id_perfil }})">
+        <i class="fas fa-copy"></i> Duplicar
+    </button>
+    <button type="button" class="btn btn-danger" onclick="deleteProfile({{ profile.id_perfil }}, '{{ profile.perfil }}')">
+        <i class="fas fa-trash"></i> Excluir
+    </button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Profile Information -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-circle text-primary"></i> 
+                    Informações do Perfil
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nome:</strong></td>
+                                <td>{{ profile.perfil }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CAD:</strong></td>
+                                <td>{{ profile.cad or '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ASS:</strong></td>
+                                <td>{{ profile.ass or '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Criado em:</strong></td>
+                                <td>{{ profile.created_at.strftime('%d/%m/%Y %H:%M') if profile.created_at else '-' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Atualizado em:</strong></td>
+                                <td>{{ profile.updated_at.strftime('%d/%m/%Y %H:%M') if profile.updated_at else '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        {% if profile.diagram_filename %}
+                        <div class="text-center">
+                            <h6>Diagrama:</h6>
+                            {% if profile.diagram_filename.lower().endswith('.pdf') %}
+                            <a href="{{ url_for('uploaded_file', filename=profile.diagram_filename) }}" target="_blank" class="btn btn-outline-info">
+                                <i class="fas fa-file-pdf"></i> Visualizar PDF
+                            </a>
+                            {% else %}
+                            <img src="{{ url_for('uploaded_file', filename=profile.diagram_filename) }}" 
+                                 class="img-fluid img-thumbnail" 
+                                 style="max-height: 200px;"
+                                 alt="Diagrama do Perfil">
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if profile.comentario %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Comentário:</h6>
+                        <p class="text-muted">{{ profile.comentario }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Protocol Flags -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Protocolos Habilitados:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% set protocols = [
+                                    ('ftp', 'FTP', 'fas fa-upload', 'info'),
+                                    ('scp', 'SCP', 'fas fa-shield-alt', 'success'),
+                                    ('cd', 'Connect:Direct', 'fas fa-exchange-alt', 'warning'),
+                                    ('http', 'HTTP', 'fas fa-globe', 'primary'),
+                                    ('jasppion', 'JASPPION', 'fas fa-robot', 'secondary'),
+                                    ('s3', 'S3', 'fab fa-aws', 'warning')
+                                ] %}
+                                {% for flag, name, icon, color in protocols %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" disabled {% if profile[flag] %}checked{% endif %}>
+                                    <label class="form-check-label">
+                                        <i class="{{ icon }} text-{{ color }}"></i> {{ name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {% set functionalities = [
+                                    ('cmd', 'CMD', 'fas fa-terminal', 'dark'),
+                                    ('formato', 'Formato', 'fas fa-file-code', 'info'),
+                                    ('header_trailer', 'Header/Trailer', 'fas fa-file-alt', 'secondary'),
+                                    ('jcl', 'JCL', 'fas fa-code', 'primary'),
+                                    ('mail', 'Mail', 'fas fa-envelope', 'success'),
+                                    ('prm', 'PRM', 'fas fa-sliders-h', 'warning'),
+                                    ('traducao', 'Tradução', 'fas fa-language', 'info'),
+                                    ('ser', 'SER', 'fas fa-server', 'dark')
+                                ] %}
+                                {% for flag, name, icon, color in functionalities %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" disabled {% if profile[flag] %}checked{% endif %}>
+                                    <label class="form-check-label">
+                                        <i class="{{ icon }} text-{{ color }}"></i> {{ name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Protocols Section -->
+        {% set protocol_configs = {} %}
+        {% for protocol in ['ftp', 'scp', 'cd', 'http', 'jasppion', 's3'] %}
+            {% if related_configs.get(protocol) %}
+                {% set _ = protocol_configs.update({protocol: related_configs[protocol]}) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if protocol_configs %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-network-wired text-info"></i> 
+                    Protocolos
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for protocol, configs in protocol_configs.items() %}
+                {% for config in configs %}
+                <div class="mb-4 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 text-uppercase text-primary">
+                            {% if protocol == 'ftp' %}
+                                <i class="fas fa-upload"></i> FTP
+                            {% elif protocol == 'scp' %}
+                                <i class="fas fa-shield-alt"></i> SCP
+                            {% elif protocol == 'cd' %}
+                                <i class="fas fa-exchange-alt"></i> Connect:Direct
+                            {% elif protocol == 'http' %}
+                                <i class="fas fa-globe"></i> HTTP
+                            {% elif protocol == 'jasppion' %}
+                                <i class="fas fa-robot"></i> JASPPION
+                            {% elif protocol == 's3' %}
+                                <i class="fab fa-aws"></i> S3
+                            {% elif protocol == 'mq' %}
+                                <i class="fas fa-comments"></i> MQ
+                            {% endif %}
+                        </h6>
+                        {% if current_user.is_advanced() %}
+                        <a href="{% if protocol == 'ftp' %}{{ url_for('edit_ftp', id=config.id_ftp) }}
+                                  {% elif protocol == 'scp' %}{{ url_for('edit_scp', id=config.id_scp) }}
+                                  {% elif protocol == 'cd' %}{{ url_for('edit_cd', id=config.id_cd) }}
+                                  {% elif protocol == 'http' %}{{ url_for('edit_http', id=config.id_http) }}
+                                  {% elif protocol == 'jasppion' %}{{ url_for('edit_jasppion', id=config.id_jasppion) }}
+                                  {% elif protocol == 's3' %}{{ url_for('edit_s3', id=config.id_s3) }}
+                                  {% elif protocol == 'mq' %}{{ url_for('edit_mq', id=config.id_mq) }}
+                                  {% endif %}"
+                           class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            {% if protocol == 'ftp' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>Servidor:</strong> {{ config.servidor or '-' }}<br>
+                                        - <strong>Porta:</strong> {{ config.porta or 21 }}<br>
+                                        - <strong>Usuário:</strong> {{ config.usuario or '-' }}<br>
+                                        - <strong>Q_SITE:</strong> {{ config.q_site or '-' }}<br>
+                                        - <strong>Diretório Local:</strong> {{ config.dir_local or '-' }}<br>
+                                        - <strong>Diretório Remoto:</strong> {{ config.dir_remoto or '-' }}<br>
+                                        - <strong>Arquivo Local:</strong> {{ config.arquivo_local or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>Arquivo Remoto:</strong> {{ config.arquivo_remoto or '-' }}<br>
+                                        - <strong>Comando:</strong> {{ config.comando or '-' }}<br>
+                                        - <strong>Certificado:</strong> {{ config.cert or '-' }}<br>
+                                        - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                        - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                        - <strong>REL:</strong> {{ 'Sim' if config.rel else 'Não' }}<br>
+                                        - <strong>BIN:</strong> {{ 'Sim' if config.bin else 'Não' }}<br>
+                                        - <strong>DEF:</strong> {{ 'Sim' if config.def_flag else 'Não' }}<br>
+                                        - <strong>CDUP:</strong> {{ 'Sim' if config.cdup else 'Não' }}<br>
+                                        - <strong>CODE:</strong> {{ 'Sim' if config.code else 'Não' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                    </div>
+                                </div>
+                            {% elif protocol == 'scp' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>Servidor:</strong> {{ config.servidor or '-' }}<br>
+                                        - <strong>Porta:</strong> {{ config.porta or 22 }}<br>
+                                        - <strong>Usuário:</strong> {{ config.usuario or '-' }}<br>
+                                        - <strong>Senha:</strong> {{ '***' if config.senha else '-' }}<br>
+                                        - <strong>Comando:</strong> {{ config.comando or '-' }}<br>
+                                        - <strong>Diretório Local:</strong> {{ config.dir_local or '-' }}<br>
+                                        - <strong>Diretório Remoto:</strong> {{ config.dir_remoto or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>Arquivo Local:</strong> {{ config.arquivo_local or '-' }}<br>
+                                        - <strong>Arquivo Remoto:</strong> {{ config.arquivo_remoto or '-' }}<br>
+                                        - <strong>SSH:</strong> {{ config.ssh or '-' }}<br>
+                                        - <strong>OK:</strong> {{ config.ok or '-' }}<br>
+                                        - <strong>NOK:</strong> {{ config.nok or '-' }}<br>
+                                        - <strong>TEL:</strong> {{ config.tel or '-' }}<br>
+                                        - <strong>PRI:</strong> {{ config.pri or '-' }}<br>
+                                        - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                        - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                        - <strong>REL:</strong> {{ 'Sim' if config.rel else 'Não' }}<br>
+                                        - <strong>BIN:</strong> {{ 'Sim' if config.bin else 'Não' }}<br>
+                                        - <strong>CODE:</strong> {{ 'Sim' if config.code else 'Não' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                    </div>
+                                </div>
+                            {% elif protocol == 'cd' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>Node:</strong> {{ config.node or '-' }}<br>
+                                        - <strong>Título:</strong> {{ config.tit or '-' }}<br>
+                                        - <strong>Autorização:</strong> {{ config.aut or '-' }}<br>
+                                        - <strong>DHD:</strong> {{ config.dhd or '-' }}<br>
+                                        - <strong>DST:</strong> {{ config.dst or '-' }}<br>
+                                        - <strong>DSN:</strong> {{ config.dsn or '-' }}<br>
+                                        - <strong>DCB:</strong> {{ config.dcb or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>Código Banco:</strong> {{ config.codbanco or '-' }}<br>
+                                        - <strong>TSK:</strong> {{ config.tsk or '-' }}<br>
+                                        - <strong>Job:</strong> {{ config.job or '-' }}<br>
+                                        - <strong>SPC:</strong> {{ config.spc or '-' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                        - <strong>DISP:</strong> {{ config.disp or '-' }}<br>
+                                        - <strong>Sysopts:</strong> {{ config.sysopts or '-' }}<br>
+                                    </div>
+                                </div>
+                            {% elif protocol == 'http' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>DNS:</strong> {{ config.dns or '-' }}<br>
+                                        - <strong>Porta:</strong> {{ config.porta or '80' }}<br>
+                                        - <strong>Usuário:</strong> {{ config.usuario or '-' }}<br>
+                                        - <strong>Métodos:</strong> {{ config.metodo or '-' }}<br>
+                                        - <strong>URI:</strong> {{ config.uri or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>Parâmetros:</strong> {{ config.prms or '-' }}<br>
+                                        - <strong>Certificado:</strong> {{ config.cert or '-' }}<br>
+                                        - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                        - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                    </div>
+                                </div>
+                            {% elif protocol == 'jasppion' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>Servidor:</strong> {{ config.servidor or '-' }}<br>
+                                        - <strong>Porta:</strong> {{ config.porta or '-' }}<br>
+                                        - <strong>URI:</strong> {{ config.uri or '-' }}<br>
+                                        - <strong>App:</strong> {{ config.app or '-' }}<br>
+                                        - <strong>Logon:</strong> {{ config.logon or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>Programa:</strong> {{ config.programa or '-' }}<br>
+                                        - <strong>Roscoe:</strong> {{ 'Sim' if config.roscoe else 'Não' }}<br>
+                                        - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                        - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                    </div>
+                                </div>
+                            {% elif protocol == 's3' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>Bucket:</strong> {{ config.bucketname or '-' }}<br>
+                                        - <strong>Região:</strong> {{ config.region or '-' }}<br>
+                                        - <strong>Access Key:</strong> {{ config.accesskey or '-' }}<br>
+                                        - <strong>Secret Key:</strong> {{ '***' if config.secretkey else '-' }}<br>
+                                        - <strong>Endpoint URL:</strong> {{ config.endpointurl or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>Folder:</strong> {{ config.foldername or '-' }}<br>
+                                        - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                        - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                    </div>
+                                </div>
+                            {% elif protocol == 'mq' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>Host:</strong> {{ config.host or '-' }}<br>
+                                        - <strong>Porta:</strong> {{ config.porta or '-' }}<br>
+                                        - <strong>Channel:</strong> {{ config.channel or '-' }}<br>
+                                        - <strong>Queue Manager:</strong> {{ config.queue_manager or '-' }}<br>
+                                        - <strong>Queue Name:</strong> {{ config.queue_name or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>Message Format:</strong> {{ config.message_format or '-' }}<br>
+                                        - <strong>Username:</strong> {{ config.username or '-' }}<br>
+                                        - <strong>Password:</strong> {{ '***' if config.password else '-' }}<br>
+                                        - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                        - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Functionalities Section -->
+        {% set functionality_configs = {} %}
+        {% for functionality in ['cmd', 'formato', 'header_trailer', 'jcl', 'mail', 'prm', 'traducao', 'ser'] %}
+            {% if related_configs.get(functionality) %}
+                {% set _ = functionality_configs.update({functionality: related_configs[functionality]}) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if functionality_configs %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs text-success"></i> 
+                    Funcionalidades
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for functionality, configs in functionality_configs.items() %}
+                {% for config in configs %}
+                <div class="mb-4 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 text-uppercase text-success">
+                            {% if functionality == 'cmd' %}
+                                <i class="fas fa-terminal"></i> CMD
+                            {% elif functionality == 'formato' %}
+                                <i class="fas fa-file-code"></i> Formato
+                            {% elif functionality == 'header_trailer' %}
+                                <i class="fas fa-file-alt"></i> Header/Trailer
+                            {% elif functionality == 'jcl' %}
+                                <i class="fas fa-code"></i> JCL
+                            {% elif functionality == 'mail' %}
+                                <i class="fas fa-envelope"></i> Mail
+                            {% elif functionality == 'prm' %}
+                                <i class="fas fa-sliders-h"></i> PRM
+                            {% elif functionality == 'traducao' %}
+                                <i class="fas fa-language"></i> Tradução
+                            {% elif functionality == 'ser' %}
+                                <i class="fas fa-server"></i> SER
+                            {% endif %}
+                        </h6>
+                        {% if current_user.is_advanced() %}
+                        <a href="{% if functionality == 'cmd' %}{{ url_for('edit_cmd', id=config.id_cmd) }}
+                                  {% elif functionality == 'formato' %}{{ url_for('edit_formato', id=config.id_formato) }}
+                                  {% elif functionality == 'header_trailer' %}{{ url_for('edit_headertrailer', id=config.id_header_trailer) }}
+                                  {% elif functionality == 'jcl' %}{{ url_for('edit_jcl', id=config.id_jcl) }}
+                                  {% elif functionality == 'mail' %}{{ url_for('edit_funcionalidades_mail', id=config.id_mail) }}
+                                  {% elif functionality == 'prm' %}{{ url_for('edit_prm', id=config.id_prm) }}
+                                  {% elif functionality == 'traducao' %}{{ url_for('edit_traducao', id=config.id_traducao) }}
+                                  {% elif functionality == 'ser' %}{{ url_for('edit_ser', id=config.id_ser) }}{% endif %}" 
+                           class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            {% if functionality == 'cmd' %}
+                                <div class="text-sm">
+                                    - <strong>Comando:</strong> {{ config.comando or '-' }}<br>
+                                    - <strong>Diretório:</strong> {{ config.diretorio or '-' }}<br>
+                                    - <strong>Arquivo:</strong> {{ config.arquivo or '-' }}<br>
+                                    - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                </div>
+                            {% elif functionality == 'formato' %}
+                                <div class="text-sm">
+                                    - <strong>De:</strong> {{ config.de or '-' }}<br>
+                                    - <strong>Para:</strong> {{ config.para or '-' }}<br>
+                                    - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                </div>
+                            {% elif functionality == 'header_trailer' %}
+                                <div class="text-sm">
+                                    - <strong>Header:</strong> {{ config.header or '-' }}<br>
+                                    - <strong>Trailer:</strong> {{ config.trailer or '-' }}<br>
+                                    - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                </div>
+                            {% elif functionality == 'jcl' %}
+                                <div class="text-sm">
+                                    - <strong>Servidor:</strong> {{ config.servidor or '-' }}<br>
+                                    - <strong>Usuário:</strong> {{ config.usuario or '-' }}<br>
+                                    - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                </div>
+                            {% elif functionality == 'mail' %}
+                                <div class="text-sm">
+                                    - <strong>Título:</strong> {{ config.tit or '-' }}<br>
+                                    - <strong>Destinatário:</strong> {{ config.dest or '-' }}<br>
+                                    - <strong>Assunto:</strong> {{ config.assunto or '-' }}<br>
+                                    - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                </div>
+                            {% elif functionality == 'prm' %}
+                                <div class="row text-sm">
+                                    <div class="col-md-6">
+                                        - <strong>Servidor:</strong> {{ config.servidor or '-' }}<br>
+                                        - <strong>Porta:</strong> {{ config.porta or '-' }}<br>
+                                        - <strong>Usuário:</strong> {{ config.usuario or '-' }}<br>
+                                        - <strong>Senha:</strong> {{ '***' if config.senha else '-' }}<br>
+                                        - <strong>Schema:</strong> {{ config.schema or '-' }}<br>
+                                        - <strong>Base:</strong> {{ config.base or '-' }}<br>
+                                        - <strong>Service Name:</strong> {{ config.service_name or '-' }}<br>
+                                    </div>
+                                    <div class="col-md-6">
+                                        - <strong>TNS:</strong> {{ config.tns or '-' }}<br>
+                                        - <strong>SID:</strong> {{ config.sid or '-' }}<br>
+                                        - <strong>Driver:</strong> {{ config.driver or '-' }}<br>
+                                        - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                        - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                        - <strong>DMZ:</strong> {{ 'Sim' if config.dmz else 'Não' }}<br>
+                                    </div>
+                                </div>
+                            {% elif functionality == 'traducao' %}
+                                <div class="text-sm">
+                                    - <strong>De:</strong> {{ config.de or '-' }}<br>
+                                    - <strong>Para:</strong> {{ config.para or '-' }}<br>
+                                </div>
+                            {% elif functionality == 'ser' %}
+                                <div class="text-sm">
+                                    - <strong>Título:</strong> {{ config.tit or '-' }}<br>
+                                    - <strong>Arquivo:</strong> {{ config.arquivo or '-' }}<br>
+                                    - <strong>REL:</strong> {{ 'Sim' if config.rel else 'Não' }}<br>
+                                    - <strong>MAILC:</strong> {{ 'Sim' if config.mailc else 'Não' }}<br>
+                                    - <strong>ZIP:</strong> {{ 'Sim' if config.zip else 'Não' }}<br>
+                                    - <strong>CRLF:</strong> {{ 'Sim' if config.crlf else 'Não' }}<br>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+
+    </div>
+
+    <!-- Quick Actions Sidebar -->
+    <div class="col-md-4">
+        {% if quick_actions and current_user.is_advanced() %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt text-warning"></i> 
+                    Ações Rápidas
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Funcionalidades habilitadas que ainda não possuem configurações cadastradas:
+                </p>
+                {% for action in quick_actions %}
+                <div class="d-grid gap-2 mb-2">
+                    <a href="{{ action.url }}" class="btn btn-outline-primary btn-sm">
+                        <i class="{{ action.icon }}"></i> 
+                        Cadastrar {{ action.name }}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o perfil <strong id="profileToDelete"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação não pode ser desfeita, mas pode ser restaurada através do histórico de alterações.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteProfile(profileId, profileName) {
+    document.getElementById('profileToDelete').textContent = profileName;
+    document.getElementById('deleteForm').action = `/perfis/${profileId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function duplicateProfile(profileId) {
+    if (confirm('Deseja duplicar este perfil? Uma cópia será criada com todas as configurações.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/perfis/${profileId}/duplicar`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

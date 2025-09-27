@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title mb-2">
+                    <i class="fas fa-tachometer-alt"></i> {{ APP_FULL_NAME }}
+                </h6>
+                <p class="card-text small">
+                    <strong>Bem-vindo, {{ current_user.username }}!</strong>
+                    Sistema completo para gerenciamento de transferências de arquivos entre servidores.
+                </p>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled small text-white">
+                            <li><i class="fas fa-upload text-white"></i> <strong class="text-white">FTP</strong>: File Transfer Protocol tradicional</li>
+                            <li><i class="fas fa-shield-alt text-white"></i> <strong class="text-white">SCP</strong>: Secure Copy Protocol via SSH</li>
+                            <li><i class="fas fa-exchange-alt text-white"></i> <strong class="text-white">Connect:Direct</strong>: Solução IBM para transferência segura</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled small text-white">
+                            <li><i class="fas fa-globe text-white"></i> <strong class="text-white">HTTP</strong>: Transferência via protocolo web</li>
+                            <li><i class="fab fa-aws text-white"></i> <strong class="text-white">S3</strong>: Armazenamento em nuvem Amazon S3</li>
+                            <li><i class="fas fa-robot text-white"></i> <strong class="text-white">JASPPION</strong>: Envio de pagamentos online ao Mainframe</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="text-white small">
+                    O sistema oferece controle completo de usuários, auditoria de operações e gerenciamento 
+                    de perfis de transferência.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Stats Cards -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Perfis
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.perfis }}</div>
+                        <div class="mt-2">
+                            <small class="text-muted">Gerenciar perfis de transferência com protocolos e configurações</small>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-circle fa-2x text-primary"></i>
+                    </div>
+                </div>
+                {% if current_user.is_advanced() %}
+                <div class="mt-2">
+                    <a href="{{ url_for('list_profiles') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> Ver Perfis
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Usuários
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.usuarios }}</div>
+                        <div class="mt-2">
+                            <small class="text-muted">Gerenciar usuários e permissões do sistema</small>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-success"></i>
+                    </div>
+                </div>
+                {% if current_user.is_advanced() %}
+                <div class="mt-2">
+                    <a href="{{ url_for('list_users') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-users"></i> Ver Usuários
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Operações
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_operacoes }}</div>
+                        <div class="mt-2">
+                            <small class="text-muted">Total de operações registradas no sistema</small>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-info"></i>
+                    </div>
+                </div>
+                {% if current_user.is_advanced() %}
+                <div class="mt-2">
+                    <a href="{{ url_for('audit_history') }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-history"></i> Ver Histórico
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            FAQ
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.faq or 12 }}</div>
+                        <div class="mt-2">
+                            <small class="text-muted">Perguntas frequentes e documentação do sistema</small>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-question-circle fa-2x text-warning"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ url_for('list_faq') }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-book"></i> Ver FAQ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Usuários Conectados e Atividades Recentes -->
+<div class="row mt-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">
+                        <i class="fas fa-users text-success"></i> Últimos 5 Usuários Conectados
+                    </h6>
+                    <small class="text-muted" id="users-last-update">Últimos usuários conectados</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshConnectedUsers()">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
+            </div>
+            <div class="card-body" id="connected-users-content">
+                {% if connected_users %}
+                <div class="list-group list-group-flush">
+                    {% for user in connected_users[:5] %}
+                    <div class="list-group-item px-0 border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-success rounded-circle" style="width: 8px; height: 8px;"></div>
+                            </div>
+                            <div class="flex-grow-1 ms-2">
+                                <div class="fw-semibold">{{ user.username }}</div>
+                                <small class="text-muted">{{ user.user_type }}</small>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <small class="text-muted">
+                                    {{ user.last_login.strftime('%H:%M') if user.last_login else '-' }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-user-slash fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Nenhum usuário conectado</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0" style="font-size: 0.9rem;">
+                    <i class="fas fa-history text-primary"></i> Atividade Recente
+                </h6>
+                <small class="text-muted" id="last-update" style="font-size: 0.6rem;">Últimas atividades do sistema</small>
+            </div>
+            <div class="card-body">
+                <div id="recent-activities">
+                    {% if activities %}
+                        <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                            <table class="table table-sm" style="font-size: 0.7rem;">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th style="font-size: 0.65rem;">Data/Hora</th>
+                                        <th style="font-size: 0.65rem;">Usuário</th>
+                                        <th style="font-size: 0.65rem;">Operação</th>
+                                        <th style="font-size: 0.65rem;">Tabela</th>
+                                        <th style="font-size: 0.65rem;">Detalhes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for activity in activities %}
+                                    <tr>
+                                        <td>{{ activity.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ activity.usuario }}</span>
+                                        </td>
+                                        <td>
+                                            {% set operation_classes = {
+                                                'CREATE': 'bg-success',
+                                                'UPDATE': 'bg-warning',
+                                                'DELETE': 'bg-danger',
+                                                'RESTORE': 'bg-info',
+                                                'LOGIN': 'bg-primary'
+                                            } %}
+                                            <span class="badge {{ operation_classes.get(activity.operacao, 'bg-secondary') }}">
+                                                {{ activity.operacao }}
+                                            </span>
+                                        </td>
+                                        <td>{{ activity.tabela }}</td>
+                                        <td>
+                                            <small class="text-muted" style="font-size: 0.55rem;">{{ activity.detalhes or '-' }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Nenhuma atividade recente encontrada.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Refresh connected users
+function refreshConnectedUsers() {
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    
+    // Show loading state
+    icon.classList.add('fa-spin');
+    button.disabled = true;
+    
+    fetch('{{ url_for("get_connected_users_api") }}')
+        .then(response => response.json())
+        .then(data => {
+            const content = document.getElementById('connected-users-content');
+            if (data.users && data.users.length > 0) {
+                let html = '<div class="list-group list-group-flush">';
+                data.users.slice(0, 5).forEach(user => {
+                    html += `
+                        <div class="list-group-item px-0 border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-success rounded-circle" style="width: 8px; height: 8px;"></div>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <div class="fw-semibold">${user.username}</div>
+                                    <small class="text-muted">${user.user_type}</small>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <small class="text-muted">${user.last_login || '-'}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                content.innerHTML = html;
+            } else {
+                content.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-user-slash fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Nenhum usuário conectado</p>
+                    </div>
+                `;
+            }
+            
+            // Update timestamp
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR');
+            document.getElementById('users-last-update').textContent = `Última atualização: ${timeStr}`;
+        })
+        .catch(error => {
+            console.error('Erro ao atualizar usuários conectados:', error);
+            showToast('Erro ao atualizar usuários conectados', 'error');
+        })
+        .finally(() => {
+            // Remove loading state
+            icon.classList.remove('fa-spin');
+            button.disabled = false;
+        });
+}
+</script>
+{% endblock %}

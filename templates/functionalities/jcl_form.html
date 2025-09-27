@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('list_jcl') }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Voltar à Lista
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-code text-primary"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select select2-profile") }}
+                                <div class="form-text">Selecione o perfil para esta configuração</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.servidor.label(class="form-label") }}
+                                {{ form.servidor(class="form-control" + (" is-invalid" if form.servidor.errors else "")) }}
+                                {% for error in form.servidor.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.usuario.label(class="form-label") }}
+                                {{ form.usuario(class="form-control" + (" is-invalid" if form.usuario.errors else "")) }}
+                                {% for error in form.usuario.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    
+                    <div class="mb-3">
+                        {{ form.jcl.label(class="form-label") }}
+                        {{ form.jcl(class="form-control", rows="5") }}
+                        {% for error in form.jcl.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                {{ form.dmz(class="form-check-input") }}
+                                {{ form.dmz.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('list_jcl') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Configuração
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Card -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - Configuração JCL
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">
+                    <strong>Servidor:</strong> Endereço do servidor mainframe
+                </p>
+                <p class="small text-muted mb-2">
+                    <strong>Usuário:</strong> ID do usuário no mainframe
+                </p>
+                <p class="small text-muted mb-2">
+                    <strong>Senha:</strong> Senha de acesso ao mainframe
+                </p>
+                <p class="small text-muted mb-2">
+                    <strong>JCL:</strong> Código JCL para execução do job
+                </p>
+                <p class="small text-muted mb-0">
+                    <strong>DMZ:</strong> Indica se o job executa na zona desmilitarizada
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

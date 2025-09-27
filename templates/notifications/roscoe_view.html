@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block page_title %}ROSCOE: {{ config.chave }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{{ url_for('list_roscoe') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+    {% if current_user.is_advanced() %}
+    <a href="{{ url_for('edit_roscoe', id=config.id_roscoe) }}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Editar
+    </a>
+    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+        <i class="fas fa-trash"></i> Excluir
+    </button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i>
+                        Detalhes da Configuração ROSCOE
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-group mb-3">
+                                <label class="info-label">ID:</label>
+                                <div class="info-value">
+                                    <span class="badge bg-secondary">{{ config.id_roscoe }}</span>
+                                </div>
+                            </div>
+
+                            <div class="info-group mb-3">
+                                <label class="info-label">Chave:</label>
+                                <div class="info-value">
+                                    <strong>{{ config.chave }}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-group mb-3">
+                                <label class="info-label">Total de Destinatários:</label>
+                                <div class="info-value">
+                                    {% set dst_count = config.dst.split('\n')|reject('equalto', '')|list|length if config.dst else 0 %}
+                                    <span class="badge bg-info">{{ dst_count }}</span>
+                                </div>
+                            </div>
+
+                            <div class="info-group mb-3">
+                                <label class="info-label">Status:</label>
+                                <div class="info-value">
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Ativo
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users"></i>
+                        Lista de Destinatários
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if config.dst %}
+                        {% set dst_lines = config.dst.split('\n') %}
+                        {% if dst_lines %}
+                            <div class="list-group">
+                                {% for dst in dst_lines %}
+                                    {% if dst.strip() %}
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-envelope text-muted me-2"></i>
+                                        <span>{{ dst.strip() }}</span>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Nenhum destinatário configurado</h5>
+                                <p class="text-muted">Edite esta configuração para adicionar destinatários</p>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum destinatário configurado</h5>
+                            <p class="text-muted">Edite esta configuração para adicionar destinatários</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+{% if current_user.is_advanced() %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a configuração ROSCOE <strong>{{ config.chave }}</strong>?</p>
+                <p class="text-muted small">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form action="{{ url_for('delete_roscoe', id=config.id_roscoe) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block styles %}
+<style>
+.info-group {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.info-value {
+    color: #212529;
+}
+
+.badge {
+    font-size: 0.875em;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+
+</style>
+{% endblock %}
+
+{% block scripts %}
+{% if current_user.is_advanced() %}
+<script>
+function confirmDelete() {
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block page_title %}Visualizar Configuração MQ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments text-info"></i> 
+                    Detalhes da Configuração MQ
+                </h5>
+                <div>
+                    <a href="{{ url_for('list_mq') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                    {% if current_user.is_advanced() %}
+                    <a href="{{ url_for('edit_mq', id=mq_config.id_mq) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <h6 class="text-primary mb-3">
+                    <i class="fas fa-user"></i> Perfil: {{ mq_config.perfil.perfil }}
+                </h6>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <th width="40%">Hostname:</th>
+                                    <td>{{ mq_config.hostname or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Porta:</th>
+                                    <td>{{ mq_config.port or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Channel:</th>
+                                    <td>{{ mq_config.channel or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>User ID:</th>
+                                    <td>{{ mq_config.userid or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Queue Manager:</th>
+                                    <td>{{ mq_config.qmgr or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Queue Name:</th>
+                                    <td>{{ mq_config.qname or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Action:</th>
+                                    <td>{{ mq_config.action or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Get Type:</th>
+                                    <td>{{ mq_config.gettype or '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <th width="40%">Message Type:</th>
+                                    <td>{{ mq_config.msgtype or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Message ID:</th>
+                                    <td>{{ mq_config.msgid or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>CCSID:</th>
+                                    <td>{{ mq_config.ccsid or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>TTL:</th>
+                                    <td>{{ mq_config.ttl or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>SSL:</th>
+                                    <td>
+                                        {% if mq_config.ssl %}
+                                            <span class="badge bg-success">Sim</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>TLS:</th>
+                                    <td>{{ mq_config.tls or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Certificate:</th>
+                                    <td>{{ mq_config.cert or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Mail:</th>
+                                    <td>
+                                        {% if mq_config.mail %}
+                                            <span class="badge bg-info">Habilitado</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Desabilitado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% if mq_config.mail %}
+                <hr>
+                <h6 class="text-info mb-3">
+                    <i class="fas fa-envelope"></i> Configurações de Email
+                </h6>
+                <div class="row">
+                    <div class="col-12">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <th width="20%">Assunto:</th>
+                                    <td>{{ mq_config.mailass or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Destinatários:</th>
+                                    <td>
+                                        {% if mq_config.maildest %}
+                                            <div class="bg-light p-2 border rounded small">
+                                                {{ mq_config.maildest|nl2br }}
+                                            </div>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Mensagem:</th>
+                                    <td>
+                                        {% if mq_config.mailmsg %}
+                                            <div class="bg-light p-2 border rounded small">
+                                                {{ mq_config.mailmsg|nl2br }}
+                                            </div>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Incluir Anexo:</th>
+                                    <td>
+                                        {% if mq_config.mailanexo %}
+                                            <span class="badge bg-success">Sim</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

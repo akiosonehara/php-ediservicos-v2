@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações FTP{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_ftp') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Nova Configuração
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form method="GET" class="d-flex align-items-center">
+                <input type="text" name="search" class="form-control me-2" placeholder="Buscar por perfil, servidor ou usuário..." value="{{ search }}" id="search-input">
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                {% if search %}
+                <a href="{{ url_for('list_ftp') }}" class="btn btn-outline-danger ms-2">
+                    <i class="fas fa-times"></i>
+                </a>
+                {% endif %}
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <form method="GET" class="d-inline">
+                {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+                <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                    <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                    <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                    <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-upload text-info"></i> 
+                Configurações FTP
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if configs.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Perfil</th>
+                            <th>Servidor</th>
+                            <th>Porta</th>
+                            <th>Usuário</th>
+                            <th>Comando</th>
+                            <th>Configurações</th>
+                            <th class="text-end" width="120">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for config_tuple in configs.items %}
+                        {% set ftp_config = config_tuple[0] %}
+                        {% set perfil = config_tuple[1] %}
+                        <tr style="cursor: pointer;" onclick="viewFtpConfig({{ ftp_config.id_ftp }})">
+                            <td>
+                                <a href="{{ url_for('view_profile', id=perfil.id_perfil) }}" class="text-decoration-none" onclick="event.stopPropagation();">
+                                    <strong>{{ perfil.perfil }}</strong>
+                                </a>
+                            </td>
+                            <td>{{ ftp_config.servidor or '-' }}</td>
+                            <td>{{ ftp_config.porta or 21 }}</td>
+                            <td>{{ ftp_config.usuario or '-' }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ ftp_config.comando or 'GET' }}</span>
+                            </td>
+                            <td>
+                                {% if ftp_config.zip %}<span class="badge bg-info me-1">ZIP</span>{% endif %}
+                                {% if ftp_config.crlf %}<span class="badge bg-warning me-1">CRLF</span>{% endif %}
+                                {% if ftp_config.bin %}<span class="badge bg-dark me-1">BIN</span>{% endif %}
+                                {% if ftp_config.rel %}<span class="badge bg-primary me-1">REL</span>{% endif %}
+                                {% if ftp_config.def_flag %}<span class="badge bg-success me-1">DEF</span>{% endif %}
+                                {% if ftp_config.cdup %}<span class="badge bg-info me-1">CDUP</span>{% endif %}
+                                {% if ftp_config.code %}<span class="badge bg-warning me-1">CODE</span>{% endif %}
+                                {% if ftp_config.dmz %}<span class="badge bg-danger me-1">DMZ</span>{% endif %}
+                                {% if not (ftp_config.zip or ftp_config.crlf or ftp_config.bin or ftp_config.rel or ftp_config.def_flag or ftp_config.cdup or ftp_config.code or ftp_config.dmz) %}<span class="text-muted">-</span>{% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-info" title="Visualizar" onclick="event.stopPropagation(); viewFtpConfig({{ ftp_config.id_ftp }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    {% if current_user.is_advanced() %}
+                                    <button class="btn btn-sm btn-outline-warning" title="Editar" onclick="event.stopPropagation(); editFtpConfig({{ ftp_config.id_ftp }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" title="Deletar" onclick="event.stopPropagation(); deleteFtpConfig({{ ftp_config.id_ftp }}, '{{ perfil.perfil }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if configs.pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if configs.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_ftp', page=configs.prev_num, per_page=request.args.get('per_page', 10), search=search) }}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in configs.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != configs.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('list_ftp', page=page_num, per_page=request.args.get('per_page', 10), search=search) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if configs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_ftp', page=configs.next_num, per_page=request.args.get('per_page', 10), search=search) }}">Próxima</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            <div class="text-center text-muted">
+                <small>Total de registros: {{ configs.total }} | Página {{ configs.page }} de {{ configs.pages }}</small>
+            </div>
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-upload fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhuma configuração FTP encontrada</h5>
+                {% if search %}
+                <p>Tente ajustar os termos de busca.</p>
+                <a href="{{ url_for('list_ftp') }}" class="btn btn-outline-secondary">Limpar Busca</a>
+                {% else %}
+                <p>Comece criando sua primeira configuração FTP.</p>
+                {% if current_user.is_advanced() %}
+                <a href="{{ url_for('create_ftp') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Criar Primeira Configuração
+                </a>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- FTP Configuration Modal -->
+<div class="modal fade" id="ftpConfigModal" tabindex="-1" aria-labelledby="ftpConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ftpConfigModalLabel">Configuração FTP</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ftpConfigContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a configuração FTP do perfil <strong id="configToDelete"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação não pode ser desfeita, mas pode ser restaurada através do histórico de alterações.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewFtpConfig(configId) {
+    fetch(`/protocolos/ftp/${configId}/view`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Perfil:</strong> ${data.perfil}<br>
+                        <strong>Servidor:</strong> ${data.servidor || '-'}<br>
+                        <strong>Porta:</strong> ${data.porta}<br>
+                        <strong>Usuário:</strong> ${data.usuario || '-'}<br>
+                        <strong>Comando:</strong> <span class="badge bg-secondary">${data.comando || 'GET'}</span><br>
+                        <strong>Q_SITE:</strong> ${data.q_site || '-'}<br>
+                        <strong>Certificado:</strong> ${data.cert || '-'}<br>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Diretório Local:</strong> ${data.dir_local || '-'}<br>
+                        <strong>Diretório Remoto:</strong> ${data.dir_remoto || '-'}<br>
+                        <strong>Arquivo Local:</strong> ${data.arquivo_local || '-'}<br>
+                        <strong>Arquivo Remoto:</strong> ${data.arquivo_remoto || '-'}<br>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-12">
+                        <strong>Configurações Ativas:</strong><br>
+                        ${data.zip ? '<span class="badge bg-info me-1">ZIP</span>' : ''}
+                        ${data.crlf ? '<span class="badge bg-warning me-1">CRLF</span>' : ''}
+                        ${data.bin ? '<span class="badge bg-dark me-1">BIN</span>' : ''}
+                        ${data.rel ? '<span class="badge bg-primary me-1">REL</span>' : ''}
+                        ${data.def_flag ? '<span class="badge bg-success me-1">DEF</span>' : ''}
+                        ${data.cdup ? '<span class="badge bg-info me-1">CDUP</span>' : ''}
+                        ${data.code ? '<span class="badge bg-warning me-1">CODE</span>' : ''}
+                        ${data.dmz ? '<span class="badge bg-danger me-1">DMZ</span>' : ''}
+                        ${data.mail ? '<span class="badge bg-success me-1">EMAIL</span>' : ''}
+                        ${(!data.zip && !data.crlf && !data.bin && !data.rel && !data.def_flag && !data.cdup && !data.code && !data.dmz && !data.mail) ? '<span class="text-muted">Nenhuma configuração ativa</span>' : ''}
+                    </div>
+                </div>
+                ${data.mail ? `
+                <hr>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6><i class="fas fa-envelope text-info"></i> Configurações de Email</h6>
+                        <strong>Assunto:</strong> ${data.mailass || '-'}<br>
+                        <strong>Anexo:</strong> ${data.mailanexo ? '<span class="text-success">Sim</span>' : '<span class="text-muted">Não</span>'}<br>
+                        ${data.mailmsg ? `
+                        <div class="mt-2 mb-2">
+                            <strong>Mensagem:</strong><br>
+                            <div class="border p-2 bg-light rounded" style="max-height: 150px; overflow-y: auto;">
+                                ${data.mailmsg.replace(/\\n/g, '<br>')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        <strong>Destinatários:</strong><br>
+                        <div class="bg-white p-2 border rounded" style="max-height: 100px; overflow-y: auto;">
+                            ${data.maildest ? data.maildest.split('\\n').map(email => email.trim()).filter(email => email).map(email => `<div class="mb-1">${email}</div>`).join('') : '<span class="text-muted">Nenhum destinatário</span>'}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('ftpConfigContent').innerHTML = content;
+            const modalElement = document.getElementById('ftpConfigModal');
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar configuração:', error);
+            alert('Erro ao carregar configuração FTP');
+        });
+}
+
+function editFtpConfig(configId) {
+    window.location.href = `/protocolos/ftp/${configId}/editar`;
+}
+
+function deleteFtpConfig(configId, perfilName) {
+    document.getElementById('configToDelete').textContent = perfilName;
+    document.getElementById('deleteForm').action = `/protocolos/ftp/${configId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Auto-submit search form on typing (with debounce)
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 500);
+});
+
+// Clear modal content when hidden to prevent conflicts
+document.getElementById('ftpConfigModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('ftpConfigContent').innerHTML = '';
+});
+</script>
+{% endblock %}

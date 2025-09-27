@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block page_title %}
+Histórico de Alterações
+{% if operation_filter %}
+<span class="badge bg-primary ms-2">
+    <i class="fas fa-filter"></i> 
+    Filtro: {{ operation_filter }}
+</span>
+{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+    <i class="fas fa-filter"></i> Filtrar
+</button>
+<ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{{ url_for('audit_history') }}">Todas as operações</a></li>
+    {% for op in operations %}
+    <li><a class="dropdown-item" href="{{ url_for('audit_history', operacao=op) }}">{{ op }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <input type="text" class="form-control" name="search" 
+                   value="{{ search or '' }}" 
+                   placeholder="Buscar por usuário, detalhes ou tabela..." 
+                   id="search-input" style="max-width: 300px;">
+            {% if operation_filter %}<input type="hidden" name="operacao" value="{{ operation_filter }}">{% endif %}
+            <button class="btn btn-outline-secondary flex-shrink-0" type="submit">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('audit_history', operacao=operation_filter) if operation_filter else url_for('audit_history') }}" class="btn btn-outline-danger flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            {% if operation_filter %}<input type="hidden" name="operacao" value="{{ operation_filter }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="20" {% if request.args.get('per_page', '20') == '20' %}selected{% endif %}>20 por página</option>
+                <option value="50" {% if request.args.get('per_page', '20') == '50' %}selected{% endif %}>50 por página</option>
+                <option value="100" {% if request.args.get('per_page', '20') == '100' %}selected{% endif %}>100 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <a href="{{ url_for('audit_history', operacao='CREATE') }}" class="text-decoration-none">
+            <div class="card text-white bg-success h-100 audit-card-hover">
+                <div class="card-body text-center">
+                    <div class="h4 mb-0">{{ stats['CREATE'] }}</div>
+                    <div class="small">Criações</div>
+                </div>
+                {% if operation_filter == 'CREATE' %}
+                <div class="card-footer text-center py-1">
+                    <small><i class="fas fa-filter"></i> Filtro ativo</small>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <a href="{{ url_for('audit_history', operacao='UPDATE') }}" class="text-decoration-none">
+            <div class="card text-white bg-warning h-100 audit-card-hover">
+                <div class="card-body text-center">
+                    <div class="h4 mb-0">{{ stats['UPDATE'] }}</div>
+                    <div class="small">Atualizações</div>
+                </div>
+                {% if operation_filter == 'UPDATE' %}
+                <div class="card-footer text-center py-1">
+                    <small><i class="fas fa-filter"></i> Filtro ativo</small>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <a href="{{ url_for('audit_history', operacao='DELETE') }}" class="text-decoration-none">
+            <div class="card text-white bg-danger h-100 audit-card-hover">
+                <div class="card-body text-center">
+                    <div class="h4 mb-0">{{ stats['DELETE'] }}</div>
+                    <div class="small">Exclusões</div>
+                </div>
+                {% if operation_filter == 'DELETE' %}
+                <div class="card-footer text-center py-1">
+                    <small><i class="fas fa-filter"></i> Filtro ativo</small>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <a href="{{ url_for('audit_history', operacao='RESTORE') }}" class="text-decoration-none">
+            <div class="card text-white bg-info h-100 audit-card-hover">
+                <div class="card-body text-center">
+                    <div class="h4 mb-0">{{ stats['RESTORE'] }}</div>
+                    <div class="small">Restaurações</div>
+                </div>
+                {% if operation_filter == 'RESTORE' %}
+                <div class="card-footer text-center py-1">
+                    <small><i class="fas fa-filter"></i> Filtro ativo</small>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <a href="{{ url_for('audit_history', operacao='LOGIN') }}" class="text-decoration-none">
+            <div class="card text-white bg-primary h-100 audit-card-hover">
+                <div class="card-body text-center">
+                    <div class="h4 mb-0">{{ stats['LOGIN'] }}</div>
+                    <div class="small">Logins</div>
+                </div>
+                {% if operation_filter == 'LOGIN' %}
+                <div class="card-footer text-center py-1">
+                    <small><i class="fas fa-filter"></i> Filtro ativo</small>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <a href="{{ url_for('audit_history') }}" class="text-decoration-none">
+            <div class="card text-white bg-secondary h-100 audit-card-hover">
+                <div class="card-body text-center">
+                    <div class="h4 mb-0">{{ stats['TOTAL'] }}</div>
+                    <div class="small">Total</div>
+                </div>
+                {% if not operation_filter %}
+                <div class="card-footer text-center py-1">
+                    <small><i class="fas fa-list"></i> Todos os registros</small>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if audit_logs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Usuário</th>
+                        <th>Operação</th>
+                        <th>Tabela</th>
+                        <th>ID do Registro</th>
+                        <th>Detalhes</th>
+                        <th>IP</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in audit_logs.items %}
+                    <tr>
+                        <td>{{ log.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ log.usuario }}</span>
+                        </td>
+                        <td>
+                            {% set operation_classes = {
+                                'CREATE': 'bg-success',
+                                'UPDATE': 'bg-warning',
+                                'DELETE': 'bg-danger',
+                                'RESTORE': 'bg-info',
+                                'LOGIN': 'bg-primary',
+                                'LOGOUT': 'bg-dark'
+                            } %}
+                            <span class="badge {{ operation_classes.get(log.operacao, 'bg-secondary') }}">
+                                {{ log.operacao }}
+                            </span>
+                        </td>
+                        <td>{{ log.tabela }}</td>
+                        <td>
+                            {% if log.id_registro %}
+                                <small class="text-muted">{{ log.id_registro }}</small>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {% if log.detalhes and log.detalhes|length > 60 %}
+                                    {{ log.detalhes[:60] }}...
+                                    <a href="#" onclick="showDetails('{{ log.detalhes|replace('\'', '\\')|replace('"', '\\"') }}')" class="text-primary">
+                                        <i class="fas fa-expand-alt"></i>
+                                    </a>
+                                {% else %}
+                                    {{ log.detalhes or '-' }}
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ log.ip_origem or '-' }}</small>
+                        </td>
+                        <td class="text-end">
+                            {% if log.operacao == 'DELETE' and current_user.is_advanced() %}
+                            <button class="btn btn-sm btn-outline-info" title="Restaurar" onclick="restoreRecord('{{ log.tabela }}', {{ log.id_registro }}, '{{ log.detalhes }}')">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if audit_logs.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if audit_logs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('audit_history', page=audit_logs.prev_num, per_page=request.args.get('per_page', 20), search=search, operacao=operation_filter) }}">Anterior</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in audit_logs.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != audit_logs.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('audit_history', page=page_num, per_page=request.args.get('per_page', 20), search=search, operacao=operation_filter) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if audit_logs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('audit_history', page=audit_logs.next_num, per_page=request.args.get('per_page', 20), search=search, operacao=operation_filter) }}">Próxima</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        <div class="text-center text-muted">
+            <small>
+                {% if operation_filter %}
+                    Registros filtrados ({{ operation_filter }}): {{ audit_logs.total }} de {{ stats['TOTAL'] }} total 
+                    | Página {{ audit_logs.page }} de {{ audit_logs.pages }}
+                    <a href="{{ url_for('audit_history') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                        <i class="fas fa-times"></i> Limpar filtro
+                    </a>
+                {% else %}
+                    Total de registros: {{ audit_logs.total }} | Página {{ audit_logs.page }} de {{ audit_logs.pages }}
+                {% endif %}
+            </small>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-history fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhum registro de auditoria encontrado</h5>
+            {% if search or operation_filter %}
+            <p>Tente ajustar os filtros de busca.</p>
+            <a href="{{ url_for('audit_history') }}" class="btn btn-outline-secondary">Limpar Filtros</a>
+            {% else %}
+            <p>O histórico de alterações será exibido aqui conforme as ações forem realizadas.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes da Operação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="detailsContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Restauração</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja restaurar este registro?</p>
+                <div id="restoreDetails" class="alert alert-info">
+                    <!-- Details will be loaded here -->
+                </div>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação criará um novo registro com os dados restaurados.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="restoreForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-info">Restaurar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.audit-card-hover {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.audit-card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.audit-card-hover .card-body {
+    transition: all 0.2s ease;
+}
+
+.audit-card-hover:hover .card-body {
+    transform: scale(1.05);
+}
+
+/* Indicador visual para card ativo */
+.card-footer {
+    background-color: rgba(255,255,255,0.2) !important;
+    border-top: 1px solid rgba(255,255,255,0.3);
+}
+
+/* Melhora a legibilidade dos links */
+a.text-decoration-none:hover {
+    text-decoration: none !important;
+}
+
+/* Adiciona indicação visual de que o card é clicável */
+.audit-card-hover::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background-color: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.audit-card-hover:hover::before {
+    background-color: rgba(255,255,255,0.8);
+    transform: scale(1.5);
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showDetails(details) {
+    document.getElementById('detailsContent').innerHTML = '<pre>' + details + '</pre>';
+    new bootstrap.Modal(document.getElementById('detailsModal')).show();
+}
+
+function restoreRecord(table, recordId, details) {
+    document.getElementById('restoreDetails').innerHTML = 
+        '<strong>Tabela:</strong> ' + table + '<br>' +
+        '<strong>ID:</strong> ' + recordId + '<br>' +
+        '<strong>Detalhes:</strong> ' + details;
+    document.getElementById('restoreForm').action = `/historico/restaurar/${table}/${recordId}`;
+    new bootstrap.Modal(document.getElementById('restoreModal')).show();
+}
+
+// Auto-submit search form on typing (with debounce)
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 500);
+});
+</script>
+{% endblock %}

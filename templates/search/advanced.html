@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+
+{% block title %}Busca Avançada - Sistema de Transferência v2.1.2{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-search-plus text-primary"></i> Busca Avançada
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-table text-primary"></i> 
+                        Seleção de Tabelas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="searchForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Selecione as tabelas para buscar:</label>
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll" checked>
+                                    <label class="form-check-label fw-bold" for="selectAll">
+                                        <i class="fas fa-check-square text-success"></i> Selecionar Todas
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectProtocols">
+                                    <label class="form-check-label fw-bold" for="selectProtocols">
+                                        <i class="fas fa-network-wired text-primary"></i> Perfis e Protocolos
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectFunctionalities">
+                                    <label class="form-check-label fw-bold" for="selectFunctionalities">
+                                        <i class="fas fa-cogs text-info"></i> Funcionalidades
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectNotifications">
+                                    <label class="form-check-label fw-bold" for="selectNotifications">
+                                        <i class="fas fa-bell text-warning"></i> Notificações
+                                    </label>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            
+                            {% for table in available_tables %}
+                            <div class="form-check">
+                                <input class="form-check-input table-checkbox" type="checkbox" 
+                                       name="selected_tables" value="{{ table.name }}" 
+                                       id="table_{{ table.name }}" 
+                                       data-group="{{ table.group }}" checked>
+                                <label class="form-check-label" for="table_{{ table.name }}">
+                                    <i class="fas {{ table.icon }}"></i> {{ table.display_name }}
+                                    <small class="text-muted d-block">{{ table.description }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.search_term.label(class="form-label fw-bold") }}
+                            {{ form.search_term(class="form-control", placeholder="Digite o termo de busca...") }}
+                            <div class="form-text">Busca será realizada em todos os campos das tabelas selecionadas</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            {% if search_performed %}
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list text-success"></i> 
+                        Resultados da Busca
+                        {% if search_term %}
+                        <span class="badge bg-primary">{{ search_term }}</span>
+                        {% endif %}
+                        {% if total_results %}
+                        <span class="badge bg-success">{{ total_results }} resultado(s)</span>
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if results %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 100px;">Ações</th>
+                                        <th>Perfil</th>
+                                        <th>Tabela</th>
+                                        <th>Coluna</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in results %}
+                                    <tr>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info me-1" title="Ver Detalhes" onclick="viewDetails('{{ result.table_name }}', '{{ result.record_id }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning" title="Editar" onclick="editRecord('{{ result.table_name }}', '{{ result.record_id }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                        <td>{{ result.perfil }}</td>
+                                        <td>{{ result.tabela }}</td>
+                                        <td>{{ result.coluna }}</td>
+                                        <td>
+                                            {% if result.valor and search_term and search_term|lower in result.valor|string|lower %}
+                                                <mark>{{ result.valor }}</mark>
+                                            {% else %}
+                                                {{ result.valor or '-' }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-muted">Nenhum resultado encontrado</h5>
+                        <p class="text-muted">Tente ajustar os termos de busca ou selecionar outras tabelas.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-search-plus text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3 text-muted">Busca Avançada</h4>
+                    <p class="text-muted">Selecione as tabelas e digite um termo para iniciar a busca.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-info-circle text-info"></i> Como Usar</h6>
+                                    <ul class="list-unstyled text-start small">
+                                        <li>• Selecione uma ou mais tabelas</li>
+                                        <li>• Digite o termo de busca</li>
+                                        <li>• Clique em "Buscar"</li>
+                                        <li>• Resultados com destaque automático</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-lightbulb text-warning"></i> Dicas</h6>
+                                    <ul class="list-unstyled text-start small">
+                                        <li>• Busca não diferencia maiúsculas</li>
+                                        <li>• Use termos específicos</li>
+                                        <li>• Funciona em todos os campos</li>
+                                        <li>• Suporta busca parcial</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Details -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Registro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Select All functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.table-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    // Uncheck group selectors when "Select All" is used
+    if (this.checked) {
+        document.getElementById('selectProtocols').checked = false;
+        document.getElementById('selectFunctionalities').checked = false;
+        document.getElementById('selectNotifications').checked = false;
+    }
+});
+
+// Select protocols functionality
+document.getElementById('selectProtocols').addEventListener('change', function() {
+    const protocolCheckboxes = document.querySelectorAll('.table-checkbox[data-group="protocols"], .table-checkbox[data-group="profiles"]');
+    protocolCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateSelectAllState();
+});
+
+// Select functionalities functionality
+document.getElementById('selectFunctionalities').addEventListener('change', function() {
+    const functionalityCheckboxes = document.querySelectorAll('.table-checkbox[data-group="functionalities"]');
+    functionalityCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateSelectAllState();
+});
+
+// Select notifications functionality
+document.getElementById('selectNotifications').addEventListener('change', function() {
+    const notificationCheckboxes = document.querySelectorAll('.table-checkbox[data-group="notifications"]');
+    notificationCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateSelectAllState();
+});
+
+// Select notifications functionality
+document.getElementById('selectNotifications').addEventListener('change', function() {
+    const notificationCheckboxes = document.querySelectorAll('.table-checkbox[data-group="notifications"]');
+    notificationCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateSelectAllState();
+});
+
+// Update select all based on individual checkboxes
+document.querySelectorAll('.table-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        updateSelectAllState();
+    });
+});
+
+function updateSelectAllState() {
+    const allCheckboxes = document.querySelectorAll('.table-checkbox');
+    const checkedCheckboxes = document.querySelectorAll('.table-checkbox:checked');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    
+    if (checkedCheckboxes.length === allCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+    } else {
+        selectAllCheckbox.checked = false;
+    }
+}
+
+// View details function
+function viewDetails(tableName, recordId) {
+    fetch(`/busca-avancada/detalhes/${tableName}/${recordId}`)
+        .then(response => response.json())
+        .then(data => {
+            let content = '<div class="row">';
+            for (const [key, value] of Object.entries(data)) {
+                content += `
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">${key}:</label>
+                            <div class="form-control-plaintext">${value || '-'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            content += '</div>';
+            
+            document.getElementById('detailsContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('detailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar detalhes:', error);
+            alert('Erro ao carregar detalhes do registro');
+        });
+}
+
+// Form validation
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+    const checkedTables = document.querySelectorAll('.table-checkbox:checked');
+    const searchTerm = document.getElementById('search_term').value.trim();
+    
+    if (checkedTables.length === 0) {
+        e.preventDefault();
+        alert('Selecione pelo menos uma tabela para buscar.');
+        return;
+    }
+    
+    if (searchTerm.length < 2) {
+        e.preventDefault();
+        alert('Digite pelo menos 2 caracteres para buscar.');
+        return;
+    }
+});
+
+// Manter seleções após submit
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're restoring from editing
+    const savedState = sessionStorage.getItem('searchState');
+    if (savedState) {
+        const state = JSON.parse(savedState);
+        // Restore search term
+        const searchInput = document.getElementById('search_term');
+        if (searchInput && state.search_term) {
+            searchInput.value = state.search_term;
+        }
+        // Restore selected tables
+        document.querySelectorAll('.table-checkbox').forEach(cb => cb.checked = false);
+        state.selected_tables.forEach(tableName => {
+            const checkbox = document.getElementById('table_' + tableName);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+        // Submit form to restore results
+        setTimeout(() => {
+            document.getElementById('searchForm').submit();
+        }, 100);
+        sessionStorage.removeItem('searchState');
+        return;
+    }
+    
+    // Se há parâmetros na URL, manter as seleções
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedTables = urlParams.getAll('selected_tables');
+    
+    if (selectedTables.length > 0) {
+        // Uncheck all first
+        document.querySelectorAll('.table-checkbox').forEach(cb => cb.checked = false);
+        selectedTables.forEach(function(tableName) {
+            const checkbox = document.getElementById('table_' + tableName);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+    }
+    
+    // Atualizar estado do "Selecionar Todas"
+    updateSelectAllState();
+});
+
+function updateSelectAllState() {
+    const allCheckboxes = document.querySelectorAll('.table-checkbox');
+    const checkedCheckboxes = document.querySelectorAll('.table-checkbox:checked');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length;
+        selectAllCheckbox.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length;
+    }
+}
+
+// Função para editar registro
+function editRecord(tableName, recordId) {
+    // Mapeamento de rotas de edição baseado nas rotas reais do sistema
+    const editRoutes = {
+        'tb_perfil': '/perfis/' + recordId + '/editar',
+        'tb_ftp': '/protocolos/ftp/' + recordId + '/editar',
+        'tb_scp': '/protocolos/scp/' + recordId + '/editar',
+        'tb_http': '#', // Não implementado ainda
+        'tb_s3': '#', // Não implementado ainda
+        'tb_cd': '#', // Não implementado ainda
+        'tb_jasppion': '#', // Não implementado ainda
+        'tb_cmd': '/funcionalidades/cmd/' + recordId + '/editar',
+        'tb_formato': '/funcionalidades/formato/' + recordId + '/editar',
+        'tb_header_trailer': '#', // Não implementado ainda
+        'tb_jcl': '#', // Não implementado ainda
+        'tb_mail': '/funcionalidades/mail/' + recordId + '/editar',
+        'tb_prm': '#', // Não implementado ainda
+        'tb_ser': '#', // Não implementado ainda
+        'tb_traducao': '#', // Não implementado ainda
+        'tb_ftpusers': '/notificacoes/ftpusers/' + recordId + '/editar',
+        'tb_mailgroup': '/notificacoes/mailgroup/' + recordId + '/editar',
+        'tb_roscoe': '/notificacoes/roscoe/' + recordId + '/editar'
+    };
+    
+    const editRoute = editRoutes[tableName];
+    if (editRoute && recordId && editRoute !== '#') {
+        console.log('Redirecionando para:', editRoute);
+        // Store current search state to restore after editing
+        sessionStorage.setItem('searchState', JSON.stringify({
+            search_term: '{{ search_term|e }}',
+            selected_tables: Array.from(document.querySelectorAll('.table-checkbox:checked')).map(cb => cb.value)
+        }));
+        window.location.href = editRoute;
+    } else if (editRoute === '#') {
+        alert('Função de edição ainda não implementada para esta tabela.');
+    } else {
+        console.error('Erro - Tabela:', tableName, 'ID:', recordId);
+        alert('Não foi possível encontrar a rota de edição para esta tabela.');
+    }
+}
+</script>
+{% endblock %}

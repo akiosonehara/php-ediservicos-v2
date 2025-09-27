@@ -1,0 +1,516 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações LDAP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Configurações de Autenticação LDAP</h2>
+        <p class="text-muted">Configure a integração com Active Directory ou outros servidores LDAP</p>
+    </div>
+    <a href="{{ url_for('configuration') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<!-- Status do LDAP -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Status da Integração LDAP
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3" id="ldap-status-icon">
+                                <i class="fas fa-question-circle text-secondary"></i>
+                            </div>
+                            <small class="text-muted">Status</small>
+                            <div class="badge" id="ldap-status-badge">Não Configurado</div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div id="ldap-status-message" class="alert alert-info mb-0">
+                            Para habilitar a autenticação LDAP, configure os campos obrigatórios abaixo e teste a conexão.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" id="ldap-form">
+    {{ form.hidden_tag() }}
+    
+    <div class="row">
+        <!-- Configurações Básicas -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog"></i> Configurações Básicas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.ldap_enabled(class="form-check-input", id="ldap-enabled") }}
+                            {{ form.ldap_enabled.label(class="form-check-label") }}
+                        </div>
+                        <small class="text-muted">Habilita a autenticação via LDAP/Active Directory</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.ldap_server_uri.label(class="form-label") }} <span class="text-danger">*</span>
+                        {{ form.ldap_server_uri(class="form-control", id="ldap-server-uri") }}
+                        {% if form.ldap_server_uri.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_server_uri.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Use ldap:// para conexões não seguras ou ldaps:// para TLS/SSL</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.ldap_base_dn.label(class="form-label") }} <span class="text-danger">*</span>
+                        {{ form.ldap_base_dn(class="form-control") }}
+                        {% if form.ldap_base_dn.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_base_dn.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Base Distinguished Name onde procurar usuários e grupos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configurações de Bind (Opcional) -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-key"></i> Bind Administrativo (Opcional)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Opcional:</strong> Configure apenas se o servidor LDAP exigir bind administrativo para buscar usuários.
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.ldap_bind_dn.label(class="form-label") }}
+                        {{ form.ldap_bind_dn(class="form-control") }}
+                        {% if form.ldap_bind_dn.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_bind_dn.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">DN do usuário administrativo para busca</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.ldap_bind_password.label(class="form-label") }}
+                        {{ form.ldap_bind_password(class="form-control") }}
+                        {% if form.ldap_bind_password.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_bind_password.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Senha do usuário administrativo</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Configurações de Busca de Usuários -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search"></i> Busca de Usuários
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.ldap_user_search_filter.label(class="form-label") }}
+                        {{ form.ldap_user_search_filter(class="form-control") }}
+                        {% if form.ldap_user_search_filter.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_user_search_filter.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Use {username} como placeholder para o nome do usuário</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.ldap_user_dn_template.label(class="form-label") }}
+                        {{ form.ldap_user_dn_template(class="form-control") }}
+                        {% if form.ldap_user_dn_template.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_user_dn_template.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Template para construir o DN do usuário</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                {{ form.ldap_email_attribute.label(class="form-label") }}
+                                {{ form.ldap_email_attribute(class="form-control") }}
+                                {% if form.ldap_email_attribute.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.ldap_email_attribute.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                {{ form.ldap_name_attribute.label(class="form-label") }}
+                                {{ form.ldap_name_attribute(class="form-control") }}
+                                {% if form.ldap_name_attribute.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.ldap_name_attribute.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configurações de Grupos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> Configurações de Grupos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.ldap_group_search_base.label(class="form-label") }}
+                        {{ form.ldap_group_search_base(class="form-control") }}
+                        {% if form.ldap_group_search_base.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_group_search_base.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Base DN para busca de grupos (opcional)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.ldap_group_search_filter.label(class="form-label") }}
+                        {{ form.ldap_group_search_filter(class="form-control") }}
+                        {% if form.ldap_group_search_filter.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_group_search_filter.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Use {user_dn} como placeholder</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.ldap_admin_groups.label(class="form-label") }}
+                        {{ form.ldap_admin_groups(class="form-control", rows="4") }}
+                        {% if form.ldap_admin_groups.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.ldap_admin_groups.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Usuários destes grupos terão privilégios de administrador</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Configurações Avançadas -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs"></i> Configurações Avançadas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                {{ form.ldap_timeout.label(class="form-label") }}
+                                {{ form.ldap_timeout(class="form-control") }}
+                                {% if form.ldap_timeout.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.ldap_timeout.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-2">
+                                {{ form.ldap_auto_create_users(class="form-check-input") }}
+                                {{ form.ldap_auto_create_users.label(class="form-check-label") }}
+                            </div>
+                            <small class="text-muted">Cria usuários automaticamente no primeiro login</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-2">
+                                {{ form.ldap_sync_groups(class="form-check-input") }}
+                                {{ form.ldap_sync_groups.label(class="form-check-label") }}
+                            </div>
+                            <small class="text-muted">Sincroniza grupos do LDAP com o sistema</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botões de Ação -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                {{ form.submit(class="btn btn-primary") }}
+                <button type="button" class="btn btn-success" id="test-connection-btn">
+                    <i class="fas fa-plug"></i> Testar Conexão
+                </button>
+                <button type="button" class="btn btn-info" id="test-user-btn">
+                    <i class="fas fa-user-check"></i> Testar Usuário
+                </button>
+                <a href="{{ url_for('configuration') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Modal para Teste de Usuário -->
+<div class="modal fade" id="testUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Testar Autenticação de Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="test-user-form">
+                    <div class="mb-3">
+                        <label for="test-username" class="form-label">Nome de Usuário</label>
+                        <input type="text" class="form-control" id="test-username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="test-password" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="test-password" required>
+                    </div>
+                    <div id="test-result" class="alert" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" id="test-user-submit">Testar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Teste de conexão
+    document.getElementById('test-connection-btn').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+        btn.disabled = true;
+        
+        fetch('{{ url_for("test_ldap_connection") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateStatus(data.success, data.message);
+            showToast(data.message, data.success ? 'success' : 'danger');
+        })
+        .catch(error => {
+            showToast('Erro ao testar conexão: ' + error.message, 'danger');
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+    
+    // Teste de usuário
+    document.getElementById('test-user-btn').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('testUserModal'));
+        modal.show();
+    });
+    
+    document.getElementById('test-user-submit').addEventListener('click', function() {
+        const username = document.getElementById('test-username').value;
+        const password = document.getElementById('test-password').value;
+        const resultDiv = document.getElementById('test-result');
+        const btn = this;
+        
+        if (!username || !password) {
+            resultDiv.className = 'alert alert-warning';
+            resultDiv.innerHTML = 'Por favor, preencha usuário e senha.';
+            resultDiv.style.display = 'block';
+            return;
+        }
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+        btn.disabled = true;
+        
+        fetch('{{ url_for("test_ldap_user") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            resultDiv.style.display = 'block';
+            
+            if (data.success) {
+                resultDiv.className = 'alert alert-success';
+                let html = '<strong>Autenticação bem-sucedida!</strong><br>';
+                html += `<strong>Email:</strong> ${data.user_info.email || 'N/A'}<br>`;
+                html += `<strong>DN:</strong> ${data.user_info.dn}<br>`;
+                html += `<strong>Administrador:</strong> ${data.user_info.is_admin ? 'Sim' : 'Não'}<br>`;
+                if (data.user_info.groups && data.user_info.groups.length > 0) {
+                    html += `<strong>Grupos:</strong> ${data.user_info.groups.join(', ')}`;
+                    if (data.user_info.groups.length === 5) {
+                        html += '...';
+                    }
+                }
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.className = 'alert alert-danger';
+                resultDiv.innerHTML = `<strong>Falha na autenticação:</strong> ${data.message}`;
+            }
+        })
+        .catch(error => {
+            resultDiv.className = 'alert alert-danger';
+            resultDiv.innerHTML = `<strong>Erro:</strong> ${error.message}`;
+            resultDiv.style.display = 'block';
+        })
+        .finally(() => {
+            btn.innerHTML = 'Testar';
+            btn.disabled = false;
+        });
+    });
+    
+    // Atualizar status baseado nas configurações atuais
+    updateStatusOnLoad();
+});
+
+function updateStatus(success, message) {
+    const icon = document.getElementById('ldap-status-icon');
+    const badge = document.getElementById('ldap-status-badge');
+    const messageDiv = document.getElementById('ldap-status-message');
+    
+    if (success) {
+        icon.innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+        badge.className = 'badge bg-success';
+        badge.textContent = 'Conectado';
+        messageDiv.className = 'alert alert-success mb-0';
+    } else {
+        icon.innerHTML = '<i class="fas fa-exclamation-circle text-danger"></i>';
+        badge.className = 'badge bg-danger';
+        badge.textContent = 'Erro';
+        messageDiv.className = 'alert alert-danger mb-0';
+    }
+    
+    messageDiv.textContent = message;
+}
+
+function updateStatusOnLoad() {
+    const enabled = document.getElementById('ldap-enabled').checked;
+    const serverUri = document.getElementById('ldap-server-uri').value;
+    
+    if (!enabled) {
+        document.getElementById('ldap-status-icon').innerHTML = '<i class="fas fa-ban text-secondary"></i>';
+        document.getElementById('ldap-status-badge').className = 'badge bg-secondary';
+        document.getElementById('ldap-status-badge').textContent = 'Desabilitado';
+        document.getElementById('ldap-status-message').textContent = 'Autenticação LDAP está desabilitada.';
+    } else if (!serverUri) {
+        document.getElementById('ldap-status-icon').innerHTML = '<i class="fas fa-question-circle text-warning"></i>';
+        document.getElementById('ldap-status-badge').className = 'badge bg-warning';
+        document.getElementById('ldap-status-badge').textContent = 'Não Configurado';
+        document.getElementById('ldap-status-message').textContent = 'Configure o servidor LDAP para habilitar a autenticação.';
+    } else {
+        document.getElementById('ldap-status-icon').innerHTML = '<i class="fas fa-cog text-info"></i>';
+        document.getElementById('ldap-status-badge').className = 'badge bg-info';
+        document.getElementById('ldap-status-badge').textContent = 'Configurado';
+        document.getElementById('ldap-status-message').className = 'alert alert-info mb-0';
+        document.getElementById('ldap-status-message').textContent = 'LDAP configurado. Teste a conexão para verificar se está funcionando.';
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

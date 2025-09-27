@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload text-info"></i>
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select", id="perfil_select") }}
+                                {% if form.perfil_id.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.perfil_id.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.servidor.label(class="form-label") }}
+                                {{ form.servidor(class="form-control") }}
+                                {% if form.servidor.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.servidor.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.porta.label(class="form-label") }}
+                                {{ form.porta(class="form-control") }}
+                                {% if form.porta.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.porta.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.usuario.label(class="form-label") }}
+                                {{ form.usuario(class="form-control") }}
+                                {% if form.usuario.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.usuario.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.q_site.label(class="form-label") }}
+                                {{ form.q_site(class="form-control") }}
+                                {% if form.q_site.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.q_site.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.dir_local.label(class="form-label") }}
+                                {{ form.dir_local(class="form-control", rows="2") }}
+                                {% if form.dir_local.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.dir_local.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.dir_remoto.label(class="form-label") }}
+                                {{ form.dir_remoto(class="form-control", rows="2") }}
+                                {% if form.dir_remoto.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.dir_remoto.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.arquivo_local.label(class="form-label") }}
+                                {{ form.arquivo_local(class="form-control", rows="2") }}
+                                {% if form.arquivo_local.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.arquivo_local.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.arquivo_remoto.label(class="form-label") }}
+                                {{ form.arquivo_remoto(class="form-control", rows="2") }}
+                                {% if form.arquivo_remoto.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.arquivo_remoto.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.comando.label(class="form-label") }}
+                                {{ form.comando(class="form-select") }}
+                                {% if form.comando.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.comando.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.cert.label(class="form-label") }}
+                                {{ form.cert(class="form-control") }}
+                                {% if form.cert.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.cert.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-check mb-3">
+                                {{ form.zip(class="form-check-input") }}
+                                {{ form.zip.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-check mb-3">
+                                {{ form.crlf(class="form-check-input") }}
+                                {{ form.crlf.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-check mb-3">
+                                {{ form.rel(class="form-check-input") }}
+                                {{ form.rel.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-check mb-3">
+                                {{ form.bin(class="form-check-input") }}
+                                {{ form.bin.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-check mb-3">
+                                {{ form.dmz(class="form-check-input") }}
+                                {{ form.dmz.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                {{ form.code.label(class="form-label") }}
+                                {{ form.code(class="form-check-input") }}
+                                <small class="form-text text-muted">Comando CODE</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <hr>
+                        <h6 class="text-primary">
+                            <i class="fas fa-cog"></i> Configurações Adicionais
+                        </h6>
+                    </div>
+                </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                {{ form.def_flag(class="form-check-input") }}
+                                {{ form.def_flag.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                {{ form.cdup(class="form-check-input") }}
+                                {{ form.cdup.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                {{ form.mail(class="form-check-input", id="mail-checkbox") }}
+                                {{ form.mail.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mailConfiguration" {% if not form.mail.data %}style="display: none;"{% endif %} class="border rounded p-3 mt-3 bg-light">
+                        <h6 class="text-info mb-3">
+                            <i class="fas fa-envelope"></i> Configurações de Email
+                        </h6>
+
+                        <div class="mb-3">
+                            {{ form.mailass.label(class="form-label") }}
+                            {{ form.mailass(class="form-control") }}
+                            {% if form.mailass.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.mailass.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Assunto do email</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.maildest.label(class="form-label") }}
+                            {{ form.maildest(class="form-control", rows="3", placeholder="email1@exemplo.com\nemail2@exemplo.com") }}
+                            {% if form.maildest.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.maildest.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Um email por linha</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.mailmsg.label(class="form-label") }}
+                            {{ form.mailmsg(class="form-control", rows="4", placeholder="Digite a mensagem que será enviada por email") }}
+                            {% if form.mailmsg.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.mailmsg.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Mensagem do email</small>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.mailanexo(class="form-check-input") }}
+                            {{ form.mailanexo.label(class="form-check-label") }}
+                            {% if form.mailanexo.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.mailanexo.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Incluir anexos nos emails</small>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Configuração
+                            </button>
+                            <a href="{{ url_for('list_ftp') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Configuração FTP
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Informações</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Servidor:</strong> Endereço do servidor FTP</li>
+                    <li><strong>Porta:</strong> Porta de conexão (padrão: 21)</li>
+                    <li><strong>Usuário:</strong> Nome de usuário para autenticação</li>
+                    <li><strong>Q_SITE:</strong> Comando específico do site FTP</li>
+                    <li><strong>Modo Passivo:</strong> Recomendado para firewalls</li>
+                </ul>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-lightbulb"></i>
+                    <small>Use diretórios absolutos para melhor compatibilidade</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for profile selection with search
+    $('#perfil_select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Selecione um perfil...',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "Nenhum perfil encontrado";
+            },
+            searching: function() {
+                return "Procurando...";
+            },
+            inputTooShort: function() {
+                return "Digite para buscar";
+            }
+        }
+    });
+
+    // Toggle mail configuration section
+    function toggleMailConfiguration() {
+        const mailCheckbox = document.getElementById('mail-checkbox');
+        const mailConfig = document.getElementById('mailConfiguration');
+
+        if (mailCheckbox && mailConfig) {
+            if (mailCheckbox.checked) {
+                mailConfig.style.display = 'block';
+            } else {
+                mailConfig.style.display = 'none';
+            }
+        }
+    }
+
+    // Email configuration setup
+    const mailCheckbox = document.getElementById('mail-checkbox');
+    const mailConfig = document.getElementById('mailConfiguration');
+
+    if (mailCheckbox && mailConfig) {
+        // Check initial state and show/hide accordingly
+        if (mailCheckbox.checked) {
+            mailConfig.style.display = 'block';
+        } else {
+            mailConfig.style.display = 'none';
+        }
+
+        // Add change event listener
+        mailCheckbox.addEventListener('change', function() {
+            toggleMailConfiguration();
+        });
+    }
+});
+</script>
+{% endblock %}

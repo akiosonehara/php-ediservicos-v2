@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('list_mailgroup') }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Voltar à Lista
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users text-primary"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.grupo.label(class="form-label") }}
+                        {{ form.grupo(class="form-control" + (" is-invalid" if form.grupo.errors else "")) }}
+                        {% for error in form.grupo.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.dst.label(class="form-label") }}
+                        {{ form.dst(class="form-control", rows="5") }}
+                        {% for error in form.dst.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('list_mailgroup') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Card -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - Grupo de Mail
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">
+                    <strong>Grupo:</strong> Nome identificador do grupo de e-mails
+                </p>
+                <p class="small text-muted mb-0">
+                    <strong>Destinatários:</strong> Lista de endereços de e-mail do grupo (um por linha)
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

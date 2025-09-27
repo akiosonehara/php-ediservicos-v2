@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block page_title %}Visualizar PRM - {{ prm_config.perfil.perfil }}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('list_prm') }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Voltar
+</a>
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('edit_prm', id=prm_config.id_prm) }}" class="btn btn-warning">
+    <i class="fas fa-edit"></i> Editar
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs text-primary"></i> 
+                    Configuração PRM - {{ prm_config.perfil.perfil }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Variáveis (V0-V9)</h6>
+                        <table class="table table-sm table-striped">
+                            <tbody>
+                                <tr><td><strong>V0:</strong></td><td>{{ prm_config.v0 or '-' }}</td></tr>
+                                <tr><td><strong>V1:</strong></td><td>{{ prm_config.v1 or '-' }}</td></tr>
+                                <tr><td><strong>V2:</strong></td><td>{{ prm_config.v2 or '-' }}</td></tr>
+                                <tr><td><strong>V3:</strong></td><td>{{ prm_config.v3 or '-' }}</td></tr>
+                                <tr><td><strong>V4:</strong></td><td>{{ prm_config.v4 or '-' }}</td></tr>
+                                <tr><td><strong>V5:</strong></td><td>{{ prm_config.v5 or '-' }}</td></tr>
+                                <tr><td><strong>V6:</strong></td><td>{{ prm_config.v6 or '-' }}</td></tr>
+                                <tr><td><strong>V7:</strong></td><td>{{ prm_config.v7 or '-' }}</td></tr>
+                                <tr><td><strong>V8:</strong></td><td>{{ prm_config.v8 or '-' }}</td></tr>
+                                <tr><td><strong>V9:</strong></td><td>{{ prm_config.v9 or '-' }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Números (N0-N9)</h6>
+                        <table class="table table-sm table-striped">
+                            <tbody>
+                                <tr><td><strong>N0:</strong></td><td>{{ prm_config.n0 or '-' }}</td></tr>
+                                <tr><td><strong>N1:</strong></td><td>{{ prm_config.n1 or '-' }}</td></tr>
+                                <tr><td><strong>N2:</strong></td><td>{{ prm_config.n2 or '-' }}</td></tr>
+                                <tr><td><strong>N3:</strong></td><td>{{ prm_config.n3 or '-' }}</td></tr>
+                                <tr><td><strong>N4:</strong></td><td>{{ prm_config.n4 or '-' }}</td></tr>
+                                <tr><td><strong>N5:</strong></td><td>{{ prm_config.n5 or '-' }}</td></tr>
+                                <tr><td><strong>N6:</strong></td><td>{{ prm_config.n6 or '-' }}</td></tr>
+                                <tr><td><strong>N7:</strong></td><td>{{ prm_config.n7 or '-' }}</td></tr>
+                                <tr><td><strong>N8:</strong></td><td>{{ prm_config.n8 or '-' }}</td></tr>
+                                <tr><td><strong>N9:</strong></td><td>{{ prm_config.n9 or '-' }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6 class="text-muted mb-3">Configurações Booleanas</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.bpid else 'bg-secondary' }}">
+                                BPID: {{ 'Sim' if prm_config.bpid else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.dd else 'bg-secondary' }}">
+                                DD: {{ 'Sim' if prm_config.dd else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.dsu else 'bg-secondary' }}">
+                                DSU: {{ 'Sim' if prm_config.dsu else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.dsl else 'bg-secondary' }}">
+                                DSL: {{ 'Sim' if prm_config.dsl else 'Não' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.dru else 'bg-secondary' }}">
+                                DRU: {{ 'Sim' if prm_config.dru else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.drl else 'bg-secondary' }}">
+                                DRL: {{ 'Sim' if prm_config.drl else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.mm else 'bg-secondary' }}">
+                                MM: {{ 'Sim' if prm_config.mm else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.mru else 'bg-secondary' }}">
+                                MRU: {{ 'Sim' if prm_config.mru else 'Não' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.mrl else 'bg-secondary' }}">
+                                MRL: {{ 'Sim' if prm_config.mrl else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.msu else 'bg-secondary' }}">
+                                MSU: {{ 'Sim' if prm_config.msu else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.msl else 'bg-secondary' }}">
+                                MSL: {{ 'Sim' if prm_config.msl else 'Não' }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.aal else 'bg-secondary' }}">
+                                AAL: {{ 'Sim' if prm_config.aal else 'Não' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <span class="badge {{ 'bg-success' if prm_config.aau else 'bg-secondary' }}">
+                                AAU: {{ 'Sim' if prm_config.aau else 'Não' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Information Card -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Informações
+                </h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Perfil:</strong><br>{{ prm_config.perfil.perfil }}</p>
+                <p><strong>ID PRM:</strong><br>{{ prm_config.id_prm }}</p>
+                {% if prm_config.perfil.comentario %}
+                <p><strong>Comentário do Perfil:</strong><br>
+                <small class="text-muted">{{ prm_config.perfil.comentario }}</small></p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-question-circle text-primary"></i> 
+                    Ajuda - PRM
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">
+                    <strong>Variáveis (V0-V9):</strong> Parâmetros de configuração variáveis
+                </p>
+                <p class="small text-muted mb-2">
+                    <strong>Números (N0-N9):</strong> Parâmetros numéricos de configuração
+                </p>
+                <p class="small text-muted mb-0">
+                    <strong>Flags booleanas:</strong> Configurações de ativação/desativação de funcionalidades específicas
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

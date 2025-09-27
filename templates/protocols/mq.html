@@ -1,0 +1,288 @@
+
+{% extends "base.html" %}
+
+{% block page_title %}Configurações MQ{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_mq') }}" class="btn btn-warning">
+    <i class="fas fa-plus"></i> Nova Configuração
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <input type="text" name="search" class="form-control" placeholder="Buscar por perfil..." value="{{ search }}" id="search-input" style="max-width: 350px;">
+            <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_mq') }}" class="btn btn-outline-danger flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-comments text-warning"></i> 
+            Configurações MQ (Message Queue)
+        </h5>
+    </div>
+    <div class="card-body">
+
+        {% if configs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Hostname</th>
+                        <th>Porta</th>
+                        <th>Queue Manager</th>
+                        <th>Queue Name</th>
+                        <th>SSL</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mq_config, perfil in configs.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_profile', id=perfil.id_perfil) }}" class="text-decoration-none">
+                                <strong>{{ perfil.perfil }}</strong>
+                            </a>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ mq_config.hostname or '-' }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ mq_config.port or 1414 }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ mq_config.qmgr or '-' }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ mq_config.qname or '-' }}</small>
+                        </td>
+                        <td>
+                            {% if mq_config.ssl %}
+                                <span class="badge bg-success">Sim</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Não</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-info btn-sm" title="Visualização Rápida" onclick="viewMQQuick({{ mq_config.id_mq }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{{ url_for('edit_mq', id=mq_config.id_mq) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user.is_advanced() %}
+                                <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{{ url_for('delete_mq', id=mq_config.id_mq) }}', '{{ perfil.perfil }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if configs.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if configs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_mq', page=configs.prev_num, search=search) }}">Anterior</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in configs.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != configs.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_mq', page=page_num, search=search) }}">{{ page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if configs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('list_mq', page=configs.next_num, search=search) }}">Próximo</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhuma configuração MQ encontrada</h5>
+            <p class="text-muted">
+                {% if search %}
+                    Nenhuma configuração corresponde aos critérios de busca.
+                {% else %}
+                    Clique em "Nova Configuração" para adicionar uma configuração MQ.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- MQ Configuration Modal -->
+<div class="modal fade" id="mqConfigModal" tabindex="-1" aria-labelledby="mqConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mqConfigModalLabel">Configuração MQ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="mqConfigContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewMQQuick(configId) {
+    fetch(`/protocolos/mq/${configId}/view`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Perfil:</strong> ${data.perfil}<br>
+                        <strong>Hostname:</strong> ${data.hostname || '-'}<br>
+                        <strong>Porta:</strong> ${data.port || 1414}<br>
+                        <strong>Channel:</strong> ${data.channel || '-'}<br>
+                        <strong>User ID:</strong> ${data.userid || '-'}<br>
+                        <strong>Queue Manager:</strong> ${data.qmgr || '-'}<br>
+                        <strong>Queue Name:</strong> ${data.qname || '-'}<br>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Action:</strong> <span class="badge bg-info">${data.action || '-'}</span><br>
+                        <strong>Get Type:</strong> ${data.gettype || '-'}<br>
+                        <strong>Message Type:</strong> ${data.msgtype || '-'}<br>
+                        <strong>Message ID:</strong> ${data.msgid || '-'}<br>
+                        <strong>CCSID:</strong> ${data.ccsid || '-'}<br>
+                        <strong>TTL:</strong> ${data.ttl || '-'}<br>
+                        <strong>SSL:</strong> ${data.ssl ? '<span class="badge bg-success">Sim</span>' : '<span class="badge bg-secondary">Não</span>'}<br>
+                    </div>
+                </div>
+                ${data.mail ? `
+                <hr>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6 class="text-info mb-3">
+                            <i class="fas fa-envelope"></i> Configurações de Email
+                        </h6>
+                        <div class="row">
+                            <div class="row">
+                            <div class="col-md-12">
+                                <strong>Assunto:</strong> ${data.mailass || '-'}<br>
+                                <strong>Anexo:</strong> ${data.mailanexo ? '<span class="text-success">Sim</span>' : '<span class="text-muted">Não</span>'}<br>
+                                ${data.mailmsg ? `
+                                <div class="mt-2 mb-2">
+                                    <strong>Mensagem:</strong><br>
+                                    <div class="border p-2 bg-light rounded" style="max-height: 150px; overflow-y: auto;">
+                                        ${data.mailmsg.replace(/\\n/g, '<br>')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                <strong>Destinatários:</strong><br>
+                                <div class="bg-white p-2 border rounded" style="max-height: 100px; overflow-y: auto;">
+                                    ${data.maildest ? data.maildest.split('\\n').map(email => email.trim()).filter(email => email).map(email => `<div class="mb-1">${email}</div>`).join('') : '<span class="text-muted">Nenhum destinatário</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('mqConfigContent').innerHTML = content;
+            const modalElement = document.getElementById('mqConfigModal');
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar configuração:', error);
+            alert('Erro ao carregar configuração MQ');
+        });
+}
+
+function confirmDelete(url, profileName) {
+    if (confirm(`Tem certeza que deseja excluir a configuração MQ do perfil "${profileName}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken.content;
+            form.appendChild(csrfInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Clear modal content when hidden to prevent conflicts
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('mqConfigModal');
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('mqConfigContent').innerHTML = '';
+        });
+    }
+});
+</script>
+{% endblock %}

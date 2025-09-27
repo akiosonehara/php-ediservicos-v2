@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block page_title %}Gerenciar Categorias FAQ{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<div class="btn-group">
+    <a href="{{ url_for('list_faq') }}" class="btn btn-outline-primary">
+        <i class="fas fa-list"></i> Ver FAQs
+    </a>
+    <a href="{{ url_for('create_faq') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nova FAQ
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% if categorias %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-folder-open text-primary"></i> 
+                    Categorias Existentes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <i class="fas fa-tag"></i> Categoria
+                                </th>
+                                <th class="text-center">
+                                    <i class="fas fa-question-circle"></i> Total de FAQs
+                                </th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for categoria in categorias %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('list_faq_by_category', categoria=categoria.nome) }}" 
+                                       class="text-decoration-none">
+                                        <strong>{{ categoria.nome }}</strong>
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info">{{ categoria.total_faqs }}</span>
+                                </td>
+                                <td class="text-center">
+                                    {% if current_user.is_advanced() %}
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('list_faq_by_category', categoria=categoria.nome) }}" 
+                                           class="btn btn-outline-info" title="Ver FAQs desta categoria">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-warning" 
+                                                onclick="renameCategory('{{ categoria.nome }}')" 
+                                                title="Renomear categoria">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" 
+                                                onclick="deleteCategory('{{ categoria.nome }}')" 
+                                                title="Excluir categoria e todas as FAQs">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary">{{ categorias|length }}</h3>
+                        <p class="mb-0">Total de Categorias</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <h3 class="text-info">{{ categorias|sum(attribute='total_faqs') }}</h3>
+                        <p class="mb-0">Total de FAQs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h3 class="text-success">{{ "%.1f"|format(categorias|sum(attribute='total_faqs') / categorias|length) if categorias else 0 }}</h3>
+                        <p class="mb-0">Média FAQs/Categoria</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma categoria encontrada</h5>
+                    <p>Comece criando a primeira FAQ do sistema para criar categorias.</p>
+                    {% if current_user.is_advanced() %}
+                    <a href="{{ url_for('create_faq') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Criar Primeira FAQ
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para renomear categoria -->
+<div class="modal fade" id="renameModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Renomear Categoria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="currentCategoryName" class="form-label">Categoria Atual:</label>
+                    <input type="text" class="form-control" id="currentCategoryName" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="newCategoryName" class="form-label">Novo Nome:</label>
+                    <input type="text" class="form-control" id="newCategoryName" placeholder="Digite o novo nome da categoria">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="confirmRename()">Renomear</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentCategory = '';
+
+function renameCategory(categoryName) {
+    currentCategory = categoryName;
+    document.getElementById('currentCategoryName').value = categoryName;
+    document.getElementById('newCategoryName').value = '';
+    new bootstrap.Modal(document.getElementById('renameModal')).show();
+}
+
+function confirmRename() {
+    const newName = document.getElementById('newCategoryName').value.trim();
+    
+    if (!newName) {
+        alert('Por favor, digite um novo nome para a categoria.');
+        return;
+    }
+    
+    fetch(`/faq/categorias/${encodeURIComponent(currentCategory)}/renomear`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            nova_categoria: newName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao renomear categoria');
+        console.error('Error:', error);
+    });
+}
+
+function deleteCategory(categoryName) {
+    if (confirm(`Tem certeza que deseja excluir a categoria "${categoryName}" e todas as FAQs desta categoria?`)) {
+        fetch(`/faq/categoria/${encodeURIComponent(categoryName)}/deletar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Erro: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao excluir categoria');
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
+{% endblock %}

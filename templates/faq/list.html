@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block page_title %}{% if categoria_filtrada %}FAQ - {{ categoria_filtrada }}{% else %}FAQ - Perguntas Frequentes{% endif %}{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<div class="btn-group">
+    <a href="{{ url_for('list_categories') }}" class="btn btn-outline-primary">
+        <i class="fas fa-folder-open"></i> Gerenciar Categorias
+    </a>
+    <a href="{{ url_for('create_faq') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nova FAQ
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if categoria_filtrada %}
+<div class="alert alert-info d-flex justify-content-between align-items-center">
+    <div>
+        <i class="fas fa-filter me-2"></i>
+        <strong>Filtro ativo:</strong> Mostrando apenas FAQs da categoria "{{ categoria_filtrada }}"
+    </div>
+    <a href="{{ url_for('list_faq') }}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-times"></i> Remover filtro
+    </a>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
+        {% if faqs_by_category %}
+        <!-- Accordion principal para categorias -->
+        <div class="accordion" id="categoryAccordion">
+            {% for categoria, faqs_categoria in faqs_by_category.items() %}
+            <div class="card mb-3">
+                <div class="card-header" id="categoryHeading{{ loop.index }}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link text-decoration-none text-start" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#categoryCollapse{{ loop.index }}" 
+                                    aria-expanded="true" aria-controls="categoryCollapse{{ loop.index }}">
+                                <i class="fas fa-folder text-primary me-2"></i>
+                                {{ categoria }}
+                                <span class="badge bg-primary ms-2">{{ faqs_categoria|length }} FAQ{{ 's' if faqs_categoria|length != 1 else '' }}</span>
+                            </button>
+                        </h5>
+                        {% if current_user.is_advanced() %}
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning" onclick="renameCategory('{{ categoria }}')" title="Renomear categoria">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteCategory('{{ categoria }}')" title="Excluir categoria">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div id="categoryCollapse{{ loop.index }}" class="collapse show" 
+                     aria-labelledby="categoryHeading{{ loop.index }}" data-bs-parent="#categoryAccordion">
+                    <div class="card-body">
+                        <!-- Accordion interno para FAQs da categoria -->
+                        <div class="accordion" id="faqAccordion{{ loop.index }}">
+                            {% for faq in faqs_categoria %}
+                            <div class="card border-light">
+                                <div class="card-header bg-light" id="faqHeading{{ faq.id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 flex-grow-1">
+                                            <button class="btn btn-link text-decoration-none text-start collapsed" type="button" 
+                                                    data-bs-toggle="collapse" data-bs-target="#faqCollapse{{ faq.id }}" 
+                                                    aria-expanded="false" aria-controls="faqCollapse{{ faq.id }}">
+                                                <i class="fas fa-question-circle text-info me-2"></i>
+                                                {{ faq.pergunta }}
+                                            </button>
+                                        </h6>
+                                        {% if current_user.is_advanced() %}
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-info" onclick="viewFaq({{ faq.id }})" title="Visualizar FAQ">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning" onclick="editFaq({{ faq.id }})" title="Editar FAQ">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" onclick="deleteFaq({{ faq.id }}, '{{ faq.pergunta[:30] }}...')" title="Excluir FAQ">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div id="faqCollapse{{ faq.id }}" class="collapse" 
+                                     aria-labelledby="faqHeading{{ faq.id }}" data-bs-parent="#faqAccordion{{ loop.index }}">
+                                    <div class="card-body">
+                                        <div class="faq-answer">
+                                            {{ faq.resposta|nl2br|safe }}
+                                        </div>
+                                        {% if faq.imagem_filename %}
+                                        <div class="mt-3">
+                                            <img src="{{ url_for('uploaded_file', filename=faq.imagem_filename) }}" 
+                                                 class="img-fluid img-thumbnail" 
+                                                 style="max-height: 300px;"
+                                                 alt="Imagem FAQ">
+                                        </div>
+                                        {% endif %}
+                                        <div class="mt-3 pt-2 border-top">
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i> 
+                                                Criado em {{ faq.created_at.strftime('%d/%m/%Y %H:%M') if faq.created_at else '-' }}{% if faq.criado_por %}, por {{ faq.criado_por }}{% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center py-5">
+                    <i class="fas fa-question-circle fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma pergunta frequente encontrada</h5>
+                    <p>Comece criando a primeira FAQ do sistema.</p>
+                    {% if current_user.is_advanced() %}
+                    <a href="{{ url_for('create_faq') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Criar Primeira FAQ
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Help Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb"></i> 
+                    Ajuda Rápida
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Sobre o Sistema</h6>
+                        <p class="small">
+                            Este é um sistema completo para controle e gerenciamento de serviços de transferência 
+                            de arquivos, suportando os principais protocolos como FTP, SCP, HTTP, Connect:Direct, 
+                            S3 e JASPPION.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Suporte</h6>
+                        <p class="small">
+                            Para suporte técnico ou dúvidas sobre o sistema, consulte a documentação completa 
+                            nas <a href="{{ url_for('configuration') }}">Configurações</a> ou entre em contato 
+                            com o administrador do sistema.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a FAQ <strong id="faqToDelete"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação não pode ser desfeita, mas pode ser restaurada através do histórico de alterações.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewFaq(faqId) {
+    window.location.href = `/faq/${faqId}/visualizar`;
+}
+
+function editFaq(faqId) {
+    window.location.href = `/faq/${faqId}/editar`;
+}
+
+function deleteFaq(faqId, faqTitle) {
+    document.getElementById('faqToDelete').textContent = faqTitle;
+    document.getElementById('deleteForm').action = `/faq/${faqId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function renameCategory(categoryName) {
+    const newName = prompt(`Renomear categoria "${categoryName}" para:`, categoryName);
+    
+    if (newName && newName.trim() && newName.trim() !== categoryName) {
+        fetch(`/faq/categorias/${encodeURIComponent(categoryName)}/renomear`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nova_categoria: newName.trim()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Erro: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao renomear categoria');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function deleteCategory(categoryName) {
+    if (confirm(`Tem certeza que deseja excluir a categoria "${categoryName}" e todas as FAQs desta categoria?`)) {
+        fetch(`/faq/categoria/${encodeURIComponent(categoryName)}/deletar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao excluir categoria: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao excluir categoria');
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
+{% endblock %}

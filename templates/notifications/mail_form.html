@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-envelope text-success"></i> 
+                    {{ title }}
+                </h5>
+
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select select2-profile") }}
+                                <div class="form-text">Selecione o perfil para esta configuração</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Headers -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Cabeçalho do Email</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.tit.label(class="form-label") }}
+                                {{ form.tit(class="form-control") }}
+                                <div class="form-text">Assunto do email que será enviado</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.dest.label(class="form-label") }}
+                                {{ form.dest(class="form-control", rows="3") }}
+                                <div class="form-text">Liste os emails separados por vírgula ou quebra de linha</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.anexo.label(class="form-label") }}
+                                {{ form.anexo(class="form-control") }}
+                                <div class="form-text">Nome do arquivo anexo (opcional)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Content -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Conteúdo do Email</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.msg.label(class="form-label") }}
+                                {{ form.msg(class="form-control", rows="8") }}
+                                <div class="form-text">Corpo da mensagem do email. Pode usar variáveis e formatação HTML.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Salvar Configuração
+                            </button>
+                            <a href="{{ url_for('list_mail') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - Mail
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Configuração de Email:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Título:</strong> Assunto do email</li>
+                    <li><strong>Destinatários:</strong> Lista de emails</li>
+                    <li><strong>Mensagem:</strong> Corpo do email</li>
+                    <li><strong>Anexo:</strong> Arquivo adicional</li>
+                </ul>
+                
+                <h6>Formatos de Destinatários:</h6>
+                <div class="alert alert-info">
+                    <small>
+                        <code>user1@example.com</code><br>
+                        <code>user1@example.com, user2@example.com</code><br>
+                        <code>user1@example.com<br>user2@example.com</code>
+                    </small>
+                </div>
+                
+                <h6>Variáveis Disponíveis:</h6>
+                <ul class="list-unstyled small">
+                    <li>• <code>{perfil}</code> - Nome do perfil</li>
+                    <li>• <code>{data}</code> - Data atual</li>
+                    <li>• <code>{hora}</code> - Hora atual</li>
+                    <li>• <code>{usuario}</code> - Usuário atual</li>
+                    <li>• <code>{status}</code> - Status da operação</li>
+                </ul>
+                
+                <h6>Dicas:</h6>
+                <ul class="list-unstyled small">
+                    <li>• Use HTML para formatação</li>
+                    <li>• Teste os emails antes de usar</li>
+                    <li>• Mantenha mensagens concisas</li>
+                    <li>• Considere templates reutilizáveis</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <small><i class="fas fa-exclamation-triangle"></i> Certifique-se de que o servidor SMTP está configurado corretamente.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

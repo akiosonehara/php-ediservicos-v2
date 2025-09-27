@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt text-primary"></i>
+                        {{ title }}
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.perfil_id.label(class="form-label") }}
+                                    {{ form.perfil_id(class="form-select") }}
+                                    {% if form.perfil_id.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.perfil_id.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.servidor.label(class="form-label") }}
+                                    {{ form.servidor(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.porta.label(class="form-label") }}
+                                    {{ form.porta(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.usuario.label(class="form-label") }}
+                                    {{ form.usuario(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.senha.label(class="form-label") }}
+                                    {{ form.senha(class="form-control", type="password") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.comando.label(class="form-label") }}
+                                    {{ form.comando(class="form-select") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.dir_local.label(class="form-label") }}
+                                    {{ form.dir_local(class="form-control", rows="2") }}
+                                    {% if form.dir_local.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.dir_local.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.dir_remoto.label(class="form-label") }}
+                                    {{ form.dir_remoto(class="form-control", rows="2") }}
+                                    {% if form.dir_remoto.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.dir_remoto.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.arquivo_local.label(class="form-label") }}
+                                    {{ form.arquivo_local(class="form-control", rows="2") }}
+                                    {% if form.arquivo_local.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.arquivo_local.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.arquivo_remoto.label(class="form-label") }}
+                                    {{ form.arquivo_remoto(class="form-control", rows="2") }}
+                                    {% if form.arquivo_remoto.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.arquivo_remoto.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SSH Configuration -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    {{ form.ssh.label(class="form-label") }}
+                                    {{ form.ssh(class="form-control", rows="3") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Response Messages -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.ok.label(class="form-label") }}
+                                    {{ form.ok(class="form-control", rows="2") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.nok.label(class="form-label") }}
+                                    {{ form.nok(class="form-control", rows="2") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Fields -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.tel.label(class="form-label") }}
+                                    {{ form.tel(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.pri.label(class="form-label") }}
+                                    {{ form.pri(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boolean Flags -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6 class="mb-3">Opções de Transferência</h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            {{ form.zip(class="form-check-input") }}
+                                            {{ form.zip.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            {{ form.crlf(class="form-check-input") }}
+                                            {{ form.crlf.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            {{ form.rel(class="form-check-input") }}
+                                            {{ form.rel.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            {{ form.bin(class="form-check-input") }}
+                                            {{ form.bin.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            {{ form.dmz(class="form-check-input") }}
+                                            {{ form.dmz.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            {{ form.code(class="form-check-input") }}
+                                            {{ form.code.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            {{ form.mail(class="form-check-input", id="mail-checkbox") }}
+                                            {{ form.mail.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="mailConfiguration" {% if not form.mail.data %}style="display: none;"{% endif %} class="border rounded p-3 mt-3 bg-light">
+                            <h6 class="text-info mb-3">
+                                <i class="fas fa-envelope"></i> Configurações de Email
+                            </h6>
+
+                            <div class="mb-3">
+                                {{ form.mailass.label(class="form-label") }}
+                                {{ form.mailass(class="form-control") }}
+                                {% if form.mailass.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.mailass.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Assunto do email</small>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.maildest.label(class="form-label") }}
+                                {{ form.maildest(class="form-control", rows="3", placeholder="email1@exemplo.com\nemail2@exemplo.com") }}
+                                {% if form.maildest.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.maildest.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Um email por linha</small>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.mailmsg.label(class="form-label") }}
+                                {{ form.mailmsg(class="form-control", rows="4", placeholder="Digite a mensagem que será enviada por email") }}
+                                {% if form.mailmsg.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.mailmsg.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Mensagem do email</small>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                {{ form.mailanexo(class="form-check-input") }}
+                                {{ form.mailanexo.label(class="form-check-label") }}
+                                {% if form.mailanexo.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.mailanexo.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Incluir anexos nos emails</small>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Salvar Configuração
+                                </button>
+                                <a href="{{ url_for('list_scp') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Voltar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle text-info"></i> 
+                        Ajuda - SCP
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Secure Copy Protocol (SCP)</h6>
+                    <p class="small text-muted">
+                        O SCP é um protocolo de rede usado para transferir arquivos de forma segura entre hosts em uma rede.
+                    </p>
+
+                    <h6>Campos Obrigatórios:</h6>
+                    <ul class="small">
+                        <li><strong>Perfil:</strong> Perfil que deve ter SCP habilitado</li>
+                        <li><strong>Servidor:</strong> Endereço do servidor SCP</li>
+                        <li><strong>Usuário:</strong> Nome de usuário para autenticação</li>
+                        <li><strong>Porta:</strong> Padrão 22 (SSH)</li>
+                    </ul>
+
+                    <h6>Autenticação:</h6>
+                    <ul class="small">
+                        <li><strong>Senha:</strong> Autenticação por senha</li>
+                        <li><strong>SSH:</strong> Chave privada SSH para autenticação sem senha</li>
+                    </ul>
+
+                    <h6>Opções de Transferência:</h6>
+                    <ul class="small">
+                        <li><strong>ZIP:</strong> Compactar arquivo antes da transferência</li>
+                        <li><strong>CRLF:</strong> Conversão de quebras de linha</li>
+                        <li><strong>REL:</strong> Usar modo relativo</li>
+                        <li><strong>BIN:</strong> Modo binário</li>
+                        <li><strong>DMZ:</strong> Transferência via DMZ</li>
+                        <li><strong>CODE:</strong> Codificação especial</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Toggle mail configuration section
+function toggleMailConfiguration() {
+    const mailCheckbox = document.getElementById('mail-checkbox');
+    const mailConfig = document.getElementById('mailConfiguration');
+
+    if (mailCheckbox && mailConfig) {
+        if (mailCheckbox.checked) {
+            mailConfig.style.display = 'block';
+        } else {
+            mailConfig.style.display = 'none';
+        }
+    }
+}
+
+// Add event listener for mail checkbox
+document.addEventListener('DOMContentLoaded', function() {
+    const mailCheckbox = document.getElementById('mail-checkbox');
+    const mailConfig = document.getElementById('mailConfiguration');
+
+    if (mailCheckbox && mailConfig) {
+        // Check initial state and show/hide accordingly
+        if (mailCheckbox.checked) {
+            mailConfig.style.display = 'block';
+        } else {
+            mailConfig.style.display = 'none';
+        }
+
+        // Add change event listener
+        mailCheckbox.addEventListener('change', function() {
+            toggleMailConfiguration();
+        });
+    }
+});
+</script>
+{% endblock %}

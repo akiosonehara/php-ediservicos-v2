@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block page_title %}Usuários FTP{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('create_ftpusers') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Novo Usuário FTP
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <input type="text" name="search" class="form-control" placeholder="Buscar usuário..." value="{{ search }}" id="search-input" style="max-width: 350px;">
+            <button type="submit" class="btn btn-outline-secondary flex-shrink-0">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            {% if search %}
+            <a href="{{ url_for('list_ftpusers') }}" class="btn btn-outline-danger flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="GET" class="d-inline">
+            {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+            <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-user text-primary"></i> 
+            Usuários FTP
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        {% if configs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Usuário</th>
+                        <th>MF Unit</th>
+                        <th>Data Criação</th>
+                        <th width="120">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for config in configs.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_ftpuser_page', id=config.id_ftpusers) }}" class="text-decoration-none">
+                                <strong>{{ config.usuario }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ config.mf_unit or '-' }}</td>
+                        <td>{{ config.created_at.strftime('%d/%m/%Y %H:%M') if config.created_at else '-' }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-info" title="Visualizar" onclick="viewFtpUserConfig({{ config.id_ftpusers }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if current_user.is_advanced() %}
+                                <a href="{{ url_for('edit_ftpusers', id=config.id_ftpusers) }}" 
+                                   class="btn btn-outline-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDelete('{{ config.id_ftpusers }}', '{{ config.usuario }}')" 
+                                        title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if configs.pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="Paginação">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if configs.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_ftpusers', page=configs.prev_num, search=search) }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in configs.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != configs.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('list_ftpusers', page=page_num, search=search) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if configs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_ftpusers', page=configs.next_num, search=search) }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhum usuário FTP encontrado</h5>
+            {% if search %}
+            <p class="text-muted">Tente ajustar os critérios de busca</p>
+            <a href="{{ url_for('list_ftpusers') }}" class="btn btn-outline-secondary">Limpar Busca</a>
+            {% else %}
+            <p class="text-muted">Comece criando seu primeiro usuário FTP</p>
+            <a href="{{ url_for('create_ftpusers') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Criar Usuário FTP
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal fade" id="ftpUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user text-info"></i> 
+                    Detalhes do Usuário FTP
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="ftpUserContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o usuário FTP <strong id="deleteUserName"></strong>?</p>
+                <p class="text-muted small">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewFtpUserConfig(configId) {
+    fetch(`/notificacoes/ftpusers/${configId}/view`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>ID:</strong> ${data.id || '-'}<br>
+                        <strong>Usuário:</strong> ${data.usuario || '-'}<br>
+                        <strong>MF Unit:</strong> ${data.mf_unit || '-'}<br>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Senha:</strong> ${data.senha || '-'}<br>
+                    </div>
+                </div>
+            `;
+            document.getElementById('ftpUserContent').innerHTML = content;
+            const modalElement = document.getElementById('ftpUserModal');
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar usuário FTP:', error);
+            alert('Erro ao carregar configuração de usuário FTP');
+        });
+}
+
+function confirmDelete(id, username) {
+    document.getElementById('deleteUserName').textContent = username;
+    document.getElementById('deleteForm').action = '{{ url_for("delete_ftpusers", id=0) }}'.replace('0', id);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Clear modal content when hidden to prevent conflicts
+document.getElementById('ftpUserModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('ftpUserContent').innerHTML = '';
+});
+</script>
+{% endblock %}

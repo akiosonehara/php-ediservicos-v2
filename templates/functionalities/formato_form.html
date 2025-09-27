@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-code text-info"></i> 
+                    {{ title }}
+                </h5>
+
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select select2-profile") }}
+                                <div class="form-text">Selecione o perfil para esta configuração</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.de.label(class="form-label") }}
+                                {{ form.de(class="form-control") }}
+                                <div class="form-text">Formato de origem dos dados</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.para.label(class="form-label") }}
+                                {{ form.para(class="form-control") }}
+                                <div class="form-text">Formato de destino dos dados</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-info">
+                                <i class="fas fa-save"></i> Salvar Configuração
+                            </button>
+                            <a href="{{ url_for('list_formato') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - Formato
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Formatos Comuns:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>CSV:</strong> Comma Separated Values</li>
+                    <li><strong>JSON:</strong> JavaScript Object Notation</li>
+                    <li><strong>XML:</strong> eXtensible Markup Language</li>
+                    <li><strong>TXT:</strong> Texto simples</li>
+                    <li><strong>XLS/XLSX:</strong> Microsoft Excel</li>
+                    <li><strong>PDF:</strong> Portable Document Format</li>
+                </ul>
+                
+                <h6>Conversões Típicas:</h6>
+                <div class="alert alert-info">
+                    <small>
+                        <strong>De:</strong> CSV<br>
+                        <strong>Para:</strong> JSON<br><br>
+                        <strong>De:</strong> XML<br>
+                        <strong>Para:</strong> CSV<br><br>
+                        <strong>De:</strong> TXT<br>
+                        <strong>Para:</strong> PDF
+                    </small>
+                </div>
+                
+                <h6>Configuração:</h6>
+                <ul class="list-unstyled small">
+                    <li>• <strong>De:</strong> Formato atual dos dados</li>
+                    <li>• <strong>Para:</strong> Formato desejado após conversão</li>
+                    <li>• Use extensões ou nomes descritivos</li>
+                    <li>• Considere encoding e delimitadores</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <small><i class="fas fa-info-circle"></i> A conversão de formato pode afetar a estrutura e conteúdo dos dados.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

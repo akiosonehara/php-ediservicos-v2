@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações do Servidor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Configurações do Servidor</h2>
+        <p class="text-muted">Configure parâmetros gerais, performance e funcionalidades do sistema</p>
+    </div>
+    <a href="{{ url_for('configuration') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div class="row">
+        <!-- Configurações Gerais -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-server"></i> Configurações Gerais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.server_name.label(class="form-label") }}
+                        {{ form.server_name(class="form-control") }}
+                        {% if form.server_name.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.server_name.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.server_description.label(class="form-label") }}
+                        {{ form.server_description(class="form-control", rows="3") }}
+                        {% if form.server_description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.server_description.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-check">
+                                {{ form.maintenance_mode(class="form-check-input") }}
+                                {{ form.maintenance_mode.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check">
+                                {{ form.debug_mode(class="form-check-input") }}
+                                {{ form.debug_mode.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configurações de Performance -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tachometer-alt"></i> Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.max_upload_size.label(class="form-label") }}
+                        {{ form.max_upload_size(class="form-control") }}
+                        {% if form.max_upload_size.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.max_upload_size.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.session_timeout.label(class="form-label") }}
+                        {{ form.session_timeout(class="form-control") }}
+                        {% if form.session_timeout.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.session_timeout.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.max_concurrent_users.label(class="form-label") }}
+                        {{ form.max_concurrent_users(class="form-control") }}
+                        {% if form.max_concurrent_users.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.max_concurrent_users.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Configurações de Log -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt"></i> Logs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.log_level.label(class="form-label") }}
+                        {{ form.log_level(class="form-control") }}
+                        {% if form.log_level.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.log_level.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.log_retention_days.label(class="form-label") }}
+                        {{ form.log_retention_days(class="form-control") }}
+                        {% if form.log_retention_days.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.log_retention_days.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configurações de Backup -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-save"></i> Backup
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        {{ form.auto_backup(class="form-check-input") }}
+                        {{ form.auto_backup.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.backup_frequency.label(class="form-label") }}
+                        {{ form.backup_frequency(class="form-control") }}
+                        {% if form.backup_frequency.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.backup_frequency.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.backup_retention.label(class="form-label") }}
+                        {{ form.backup_retention(class="form-control") }}
+                        {% if form.backup_retention.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.backup_retention.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Configurações de Email/SMTP -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-envelope"></i> Configurações de Email (SMTP)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.smtp_server.label(class="form-label") }}
+                                {{ form.smtp_server(class="form-control") }}
+                                {% if form.smtp_server.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.smtp_server.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.smtp_port.label(class="form-label") }}
+                                {{ form.smtp_port(class="form-control") }}
+                                {% if form.smtp_port.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.smtp_port.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-check">
+                                {{ form.smtp_use_tls(class="form-check-input") }}
+                                {{ form.smtp_use_tls.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.smtp_username.label(class="form-label") }}
+                                {{ form.smtp_username(class="form-control") }}
+                                {% if form.smtp_username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.smtp_username.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.smtp_password.label(class="form-label") }}
+                                {{ form.smtp_password(class="form-control") }}
+                                {% if form.smtp_password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.smtp_password.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.admin_email.label(class="form-label") }}
+                                {{ form.admin_email(class="form-control") }}
+                                {% if form.admin_email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.admin_email.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                {{ form.submit(class="btn btn-primary") }}
+                <button type="button" class="btn btn-success" onclick="testEmailConfig()">
+                    <i class="fas fa-envelope-open"></i> Testar Email
+                </button>
+                <button type="button" class="btn btn-warning" onclick="restartServer()">
+                    <i class="fas fa-redo"></i> Reiniciar Servidor
+                </button>
+                <a href="{{ url_for('configuration') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function testEmailConfig() {
+    showToast('Teste de configuração de email será implementado em breve', 'info');
+}
+
+function restartServer() {
+    if (confirm('Tem certeza que deseja reiniciar o servidor? Esta ação irá desconectar todos os usuários.')) {
+        showToast('Funcionalidade de reiniciar servidor será implementada em breve', 'info');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fab fa-aws text-warning"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select", id="perfil_select") }}
+                                {% if form.perfil_id.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.perfil_id.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connection Settings -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configurações de Endpoint</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.endpointurl.label(class="form-label") }}
+                                {{ form.endpointurl(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.endpointport.label(class="form-label") }}
+                                {{ form.endpointport(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.bucketname.label(class="form-label") }}
+                                {{ form.bucketname(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.region.label(class="form-label") }}
+                                {{ form.region(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authentication -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Credenciais AWS</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.accesskey.label(class="form-label") }}
+                                {{ form.accesskey(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.secretkey.label(class="form-label") }}
+                                {{ form.secretkey(class="form-control", type="password") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Operations -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Operações de Arquivo</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.action.label(class="form-label") }}
+                                {{ form.action(class="form-select") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.foldername.label(class="form-label") }}
+                                {{ form.foldername(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check mt-4">
+                                    {{ form.dmz(class="form-check-input") }}
+                                    {{ form.dmz.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.filename.label(class="form-label") }}
+                                {{ form.filename(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.localfilename.label(class="form-label") }}
+                                {{ form.localfilename(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configurações Avançadas</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.header.label(class="form-label") }}
+                                {{ form.header(class="form-control", rows="3") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.acl.label(class="form-label") }}
+                                {{ form.acl(class="form-control", rows="2") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.tag.label(class="form-label") }}
+                                {{ form.tag(class="form-control", rows="2") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.ecs.label(class="form-label") }}
+                                {{ form.ecs(class="form-control", rows="2") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configurações de Email</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mail(class="form-check-input") }}
+                                    {{ form.mail.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Ativar notificações por email</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mailanexo(class="form-check-input") }}
+                                    {{ form.mailanexo.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Enviar arquivos como anexo</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailass.label(class="form-label") }}
+                                {{ form.mailass(class="form-control", placeholder="Assunto do email de notificação") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.maildest.label(class="form-label") }}
+                                {{ form.maildest(class="form-control", rows="3", placeholder="Lista de destinatários separados por vírgula ou quebra de linha") }}
+                                <small class="form-text text-muted">Ex: admin@empresa.com, usuario@empresa.com</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailmsg.label(class="form-label") }}
+                                {{ form.mailmsg(class="form-control", rows="4", placeholder="Mensagem personalizada do email") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Salvar Configuração
+                            </button>
+                            <a href="{{ url_for('list_s3') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - S3
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Configuração AWS:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Endpoint URL:</strong> URL do serviço S3</li>
+                    <li><strong>Bucket:</strong> Nome do bucket S3</li>
+                    <li><strong>Região:</strong> Região AWS (ex: us-east-1)</li>
+                    <li><strong>Access/Secret Key:</strong> Credenciais AWS</li>
+                </ul>
+
+                <h6>Operações:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>GET:</strong> Download de arquivos</li>
+                    <li><strong>PUT:</strong> Upload de arquivos</li>
+                    <li><strong>DELETE:</strong> Exclusão de arquivos</li>
+                </ul>
+
+                <h6>Configurações:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>ACL:</strong> Permissões de acesso</li>
+                    <li><strong>Tags:</strong> Metadados do objeto</li>
+                    <li><strong>ECS:</strong> Configurações ECS</li>
+                    <li><strong>DMZ:</strong> Zona desmilitarizada</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for profile selection with search
+    $('#perfil_select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Selecione um perfil...',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "Nenhum perfil encontrado";
+            },
+            searching: function() {
+                return "Procurando...";
+            },
+            inputTooShort: function() {
+                return "Digite para buscar";
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

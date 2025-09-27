@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-file-alt text-secondary"></i> 
+            {{ title }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.perfil_id.label(class="form-label") }}
+                {{ form.perfil_id(class="form-select select2-profile") }}
+                <div class="form-text">Selecione o perfil para esta configuração</div>
+            </div>
+            
+            <div class="mb-3">
+                {{ form.htr0_p1.label(class="form-label") }}
+                {{ form.htr0_p1(class="form-control") }}
+                {% if form.htr0_p1.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr0_p1.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.htr0_p2.label(class="form-label") }}
+                {{ form.htr0_p2(class="form-control") }}
+                {% if form.htr0_p2.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr0_p2.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.htr1_p1.label(class="form-label") }}
+                {{ form.htr1_p1(class="form-control") }}
+                {% if form.htr1_p1.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr1_p1.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.htr1_p2(class="form-check-input") }}
+                    {{ form.htr1_p2.label(class="form-check-label") }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.htr2(class="form-check-input") }}
+                    {{ form.htr2.label(class="form-check-label") }}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.htr5(class="form-check-input") }}
+                    {{ form.htr5.label(class="form-check-label") }}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.htr6(class="form-check-input") }}
+                    {{ form.htr6.label(class="form-check-label") }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.htr3.label(class="form-label") }}
+                {{ form.htr3(class="form-control") }}
+                {% if form.htr3.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr3.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.htr4.label(class="form-label") }}
+                {{ form.htr4(class="form-control") }}
+                {% if form.htr4.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr4.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.htr7(class="form-check-input") }}
+                    {{ form.htr7.label(class="form-check-label") }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.htr8_p1.label(class="form-label") }}
+                {{ form.htr8_p1(class="form-control", rows="4") }}
+                {% if form.htr8_p1.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr8_p1.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.htr8_p2(class="form-check-input") }}
+                    {{ form.htr8_p2.label(class="form-check-label") }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.htr9_p1.label(class="form-label") }}
+                {{ form.htr9_p1(class="form-control") }}
+                {% if form.htr9_p1.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr9_p1.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.htr9_p2.label(class="form-label") }}
+                {{ form.htr9_p2(class="form-control") }}
+                {% if form.htr9_p2.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htr9_p2.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.htra.label(class="form-label") }}
+                {{ form.htra(class="form-control") }}
+                {% if form.htra.errors %}
+                    <div class="text-danger">
+                        {% for error in form.htra.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('list_headertrailer') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

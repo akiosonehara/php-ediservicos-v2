@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configurações do Sistema{% endblock %}
+
+{% block content %}
+<!-- System Information -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-primary"></i> 
+                    Informações do Sistema
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Tecnologias Utilizadas:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fab fa-python text-warning"></i> <a href="https://python.org" target="_blank">Python 3.x</a> - Linguagem de programação</li>
+                            <li><i class="fas fa-flask text-info"></i> <a href="https://flask.palletsprojects.com" target="_blank">Flask</a> - Framework web</li>
+                            <li><i class="fas fa-database text-primary"></i> <a href="https://www.oracle.com/" target="_blank">Oracle</a> - Banco de dados</li>
+                            <li><i class="fab fa-bootstrap text-purple"></i> <a href="https://getbootstrap.com" target="_blank">Bootstrap 5</a> - Framework CSS</li>
+                            <li><i class="fab fa-js-square text-warning"></i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">JavaScript</a> - Funcionalidades interativas</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Características do Sistema:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Controle de perfis de transferência</li>
+                            <li><i class="fas fa-check text-success"></i> Suporte a múltiplos protocolos (FTP, SCP, HTTP, S3, etc.)</li>
+                            <li><i class="fas fa-check text-success"></i> Sistema de usuários com permissões</li>
+                            <li><i class="fas fa-check text-success"></i> Auditoria completa de operações</li>
+                            <li><i class="fas fa-check text-success"></i> Interface responsiva e intuitiva</li>
+                            <li><i class="fas fa-check text-success"></i> Upload e gerenciamento de diagramas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs text-primary"></i> 
+                    Ações Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <a href="{{ url_for('database_configuration') }}" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="fas fa-database fa-2x mb-2 d-block"></i>
+                            <strong>Banco de Dados</strong>
+                            <small class="d-block text-muted">Configurar Oracle</small>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <a href="{{ url_for('server_configuration') }}" class="btn btn-outline-secondary btn-lg w-100">
+                            <i class="fas fa-server fa-2x mb-2 d-block"></i>
+                            <strong>Servidor</strong>
+                            <small class="d-block text-muted">Configurações gerais</small>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <a href="{{ url_for('security_configuration') }}" class="btn btn-outline-info btn-lg w-100">
+                            <i class="fas fa-shield-alt fa-2x mb-2 d-block"></i>
+                            <strong>Segurança</strong>
+                            <small class="d-block text-muted">Políticas e permissões</small>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <a href="{{ url_for('ldap_configuration') }}" class="btn btn-outline-success btn-lg w-100">
+                            <i class="fas fa-users-cog fa-2x mb-2 d-block"></i>
+                            <strong>LDAP/AD</strong>
+                            <small class="d-block text-muted">Autenticação corporativa</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Database Configuration -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-database text-primary"></i> 
+                    Configurações do Banco de Dados
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Variáveis de Aplicação:</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>SERVER:</strong></td>
+                                <td>{{ env_vars.ORACLE_HOST }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PORTA:</strong></td>
+                                <td>{{ env_vars.ORACLE_PORT }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>BANCO:</strong></td>
+                                <td>{{ env_vars.ORACLE_DATABASE }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>USUÁRIO:</strong></td>
+                                <td>{{ env_vars.ORACLE_USER }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SENHA:</strong></td>
+                                <td>***</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Configurações de Banco Oracle:</h6>
+                        <div class="alert alert-info">
+                            <small>
+                                <strong>Port Standard:</strong> 1521<br>
+                                <strong>Tipo de Conexão:</strong> Service Name<br>
+                                <strong>Banco de Dados:</strong> Oracle 19c<br>
+                                <strong>Driver:</strong> oracledb<br>
+                                <strong>Charset:</strong> UTF-8
+                            </small>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ url_for('database_configuration') }}" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Configurar Conexões
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Downloads and Documentation -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-download text-success"></i> 
+                    Downloads
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="row">
+                    <div class="col-4">
+                        <i class="fas fa-file-archive fa-3x text-primary mb-3"></i>
+                        <h6>Código Fonte</h6>
+                        <p class="small text-muted">Download de todo o sistema em formato .zip</p>
+                        <a href="{{ url_for('download_source_code') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-download"></i> Download ZIP
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <i class="fas fa-database fa-3x text-success mb-3"></i>
+                        <h6>Dump Banco</h6>
+                        <p class="small text-muted">Backup completo do banco em formato .sql</p>
+                        <a href="{{ url_for('download_database_dump') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-download"></i> Download SQL
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                        <h6>Documentação</h6>
+                        <p class="small text-muted">Manual completo do sistema em PDF</p>
+                        <a href="{{ url_for('download_documentation') }}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar text-info"></i> 
+                    Estatísticas do Sistema
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-primary text-white h-100">
+                            <div class="card-body text-center">
+                                <div class="h4">{{ stats.perfis }}</div>
+                                <div class="small">Perfis</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white h-100">
+                            <div class="card-body text-center">
+                                <div class="h4">{{ stats.usuarios }}</div>
+                                <div class="small">Usuários</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card bg-warning text-white h-100">
+                            <div class="card-body text-center">
+                                <div class="h4">{{ stats.faq }}</div>
+                                <div class="small">FAQs</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-info text-white h-100">
+                            <div class="card-body text-center">
+                                <div class="h4">{{ stats.audit_total }}</div>
+                                <div class="small">Operações de Auditoria</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card bg-secondary text-white h-100">
+                            <div class="card-body text-center">
+                                <div class="h4">{{ stats.ftp + stats.scp + stats.http + stats.s3 + stats.cd + stats.jasppion }}</div>
+                                <div class="small">Configurações de Protocolos</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-dark text-white h-100">
+                            <div class="card-body text-center">
+                                <div class="h5">v5.0</div>
+                                <div class="small">Versão do sistema</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="text-center mb-3">Detalhamento por Categoria</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="small text-muted">PROTOCOLOS:</h6>
+                            <ul class="list-unstyled small">
+                                <li>FTP: {{ stats.ftp }}</li>
+                                <li>SCP: {{ stats.scp }}</li>
+                                <li>HTTP: {{ stats.http }}</li>
+                                <li>S3: {{ stats.s3 }}</li>
+                                <li>Connect:Direct: {{ stats.cd }}</li>
+                                <li>JASPPION: {{ stats.jasppion }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="small text-muted">FUNCIONALIDADES:</h6>
+                            <ul class="list-unstyled small">
+                                <li>CMD: {{ stats.cmd }}</li>
+                                <li>Formato: {{ stats.formato }}</li>
+                                <li>Header/Trailer: {{ stats.header_trailer }}</li>
+                                <li>JCL: {{ stats.jcl }}</li>
+                                <li>Mail: {{ stats.mail }}</li>
+                                <li>PRM: {{ stats.prm }}</li>
+                                <li>Tradução: {{ stats.traducao }}</li>
+                                <li>SER: {{ stats.ser }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <strong>ÚLTIMA ATUALIZAÇÃO:</strong><br>
+                        Data: 18/07/2025
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documentation -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-book text-success"></i> 
+                    Documentação
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-user"></i> Manual do Usuário
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check"></i> Visão geral do sistema</li>
+                                    <li><i class="fas fa-check"></i> Como gerenciar perfis</li>
+                                    <li><i class="fas fa-check"></i> Configuração de protocolos</li>
+                                    <li><i class="fas fa-check"></i> Upload de diagramas</li>
+                                    <li><i class="fas fa-check"></i> FAQ e troubleshooting</li>
+                                </ul>
+                                <button class="btn btn-success btn-sm">
+                                    <i class="fas fa-download"></i> Download Manual
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-code"></i> Manual do Desenvolvedor
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check"></i> Arquitetura MVC</li>
+                                    <li><i class="fas fa-check"></i> Estrutura de diretórios</li>
+                                    <li><i class="fas fa-check"></i> Adição de novos campos</li>
+                                    <li><i class="fas fa-check"></i> Criação de novos CRUDs</li>
+                                    <li><i class="fas fa-check"></i> API e integrações</li>
+                                </ul>
+                                <button class="btn btn-info btn-sm">
+                                    <i class="fas fa-download"></i> Download Manual
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Access Logs -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list text-warning"></i> 
+                    Log de Acessos
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    O sistema mantém registro de todos os acessos e ações realizadas pelos usuários.
+                    Para visualizar o log completo, acesse o <a href="{{ url_for('audit_history') }}">Histórico de Alterações</a>.
+                </p>
+
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Informações Registradas:</h6>
+                    <ul class="mb-0">
+                        <li>Data e hora da ação</li>
+                        <li>Usuário que realizou a ação</li>
+                        <li>Endereço IP de origem</li>
+                        <li>Tipo de operação (Criação, Alteração, Exclusão, Login/Logout)</li>
+                        <li>Detalhes da operação realizada</li>
+                    </ul>
+                </div>
+
+                <a href="{{ url_for('audit_history') }}" class="btn btn-warning">
+                    <i class="fas fa-history"></i> Ver Histórico Completo
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function downloadSource() {
+    alert('Funcionalidade de download do código fonte em desenvolvimento.');
+}
+
+function downloadManual() {
+    alert('Funcionalidade de download da documentação em desenvolvimento.');
+}
+
+function showComingSoon() {
+    alert('Funcionalidade em desenvolvimento. Em breve estará disponível!');
+}
+</script>
+{% endblock %}

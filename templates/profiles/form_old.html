@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-circle text-primary"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.perfil.label(class="form-label") }}
+                        {{ form.perfil(class="form-control") }}
+                        {% if form.perfil.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.perfil.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.diagram.label(class="form-label") }}
+                        {{ form.diagram(class="form-control") }}
+                        {% if form.diagram.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.diagram.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if profile and profile.diagram_filename %}
+                        <small class="text-muted">
+                            Arquivo atual: {{ profile.diagram_filename }}
+                            <a href="{{ url_for('uploaded_file', filename=profile.diagram_filename) }}" target="_blank">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.cad.label(class="form-label") }}
+                                {{ form.cad(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.ass.label(class="form-label") }}
+                                {{ form.ass(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.comentario.label(class="form-label") }}
+                        {{ form.comentario(class="form-control", rows="3") }}
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <a href="{{ url_for('list_profiles') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-network-wired text-info"></i> 
+                    Protocolos Habilitados
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.ftp(class="form-check-input") }}
+                            {{ form.ftp.label(class="form-check-label") }}
+                            <i class="fas fa-upload text-info ms-1"></i>
+                        </div>
+                    </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.scp(class="form-check-input") }}
+                                    {{ form.scp.label(class="form-check-label") }}
+                                    <i class="fas fa-shield-alt text-success ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.cd(class="form-check-input") }}
+                                    {{ form.cd.label(class="form-check-label") }}
+                                    <i class="fas fa-exchange-alt text-warning ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.http(class="form-check-input") }}
+                                    {{ form.http.label(class="form-check-label") }}
+                                    <i class="fas fa-globe text-primary ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.jasppion(class="form-check-input") }}
+                                    {{ form.jasppion.label(class="form-check-label") }}
+                                    <i class="fas fa-robot text-secondary ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.s3(class="form-check-input") }}
+                                    {{ form.s3.label(class="form-check-label") }}
+                                    <i class="fab fa-aws text-warning ms-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-muted mb-3">Funcionalidades</h6>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.cmd(class="form-check-input") }}
+                                    {{ form.cmd.label(class="form-check-label") }}
+                                    <i class="fas fa-terminal text-dark ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.formato(class="form-check-input") }}
+                                    {{ form.formato.label(class="form-check-label") }}
+                                    <i class="fas fa-file-code text-info ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.header_trailer(class="form-check-input") }}
+                                    {{ form.header_trailer.label(class="form-check-label") }}
+                                    <i class="fas fa-file-alt text-secondary ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.jcl(class="form-check-input") }}
+                                    {{ form.jcl.label(class="form-check-label") }}
+                                    <i class="fas fa-code text-primary ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mail(class="form-check-input") }}
+                                    {{ form.mail.label(class="form-check-label") }}
+                                    <i class="fas fa-envelope text-success ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.prm(class="form-check-input") }}
+                                    {{ form.prm.label(class="form-check-label") }}
+                                    <i class="fas fa-sliders-h text-warning ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.traducao(class="form-check-input") }}
+                                    {{ form.traducao.label(class="form-check-label") }}
+                                    <i class="fas fa-language text-info ms-1"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.ser(class="form-check-input") }}
+                                    {{ form.ser.label(class="form-check-label") }}
+                                    <i class="fas fa-server text-dark ms-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <a href="{{ url_for('list_profiles') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Protocolos</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>FTP:</strong> File Transfer Protocol para transferência de arquivos</li>
+                    <li><strong>SCP:</strong> Secure Copy Protocol via SSH</li>
+                    <li><strong>Connect:Direct:</strong> Solução IBM para transferência segura</li>
+                    <li><strong>HTTP:</strong> Transferência via protocolo web</li>
+                    <li><strong>JASPPION:</strong> Envio de pagamentos ao Mainframe</li>
+                    <li><strong>S3:</strong> Amazon Simple Storage Service</li>
+                </ul>
+                
+                <h6 class="mt-3">Funcionalidades</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>CMD:</strong> Execução de comandos via CLI</li>
+                    <li><strong>Formato:</strong> Conversão de encoding de arquivos</li>
+                    <li><strong>Header/Trailer:</strong> Controle de cabeçalho e rodapé</li>
+                    <li><strong>JCL:</strong> Scripts para Mainframe</li>
+                    <li><strong>Mail:</strong> Envio de notificações por email</li>
+                    <li><strong>PRM:</strong> Variáveis do sistema legado</li>
+                    <li><strong>Tradução:</strong> Conversão de dados</li>
+                    <li><strong>SER:</strong> Configurações de serviço</li>
+                </ul>
+                
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-lightbulb"></i>
+                        Marque apenas os protocolos e funcionalidades que serão utilizados neste perfil.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

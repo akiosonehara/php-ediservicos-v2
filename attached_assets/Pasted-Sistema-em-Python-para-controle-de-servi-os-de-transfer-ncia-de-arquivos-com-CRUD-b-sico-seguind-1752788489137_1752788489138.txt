@@ -1,0 +1,155 @@
+Sistema, em Python, para controle de serviços de transferência de arquivos, com CRUD básico, seguindo os critérios abaixo:
+
+1. consiste de tabela principal (tb_perfil) que manterá os perfis;
+2. consiste de tabelas auxiliares que se relacionam com a tabela de perfil;
+3. as tabelas auxiliares atendem as seguintes funcionalidades:
+
+Tabelas auxiliares RELACIONADAS (dependentes ou filhas) da tabela perfil (vinculada por chave estrangeira (id_perfil):
+3.1 - TB_CD: mantém informações do protocolo Connect:Direct (CD);
+3.2 - TB_FTP: mantém informações do protocolo FTP;
+3.3 - TB_SCP: mantém informações do protocolo SCP;
+3.4 - TB_HTTP: mantém informações do protocolo HTTP;
+3.5 - TB_JASPPION: mantém informações de envio de pagamentos online ao Mainframe (MF);
+3.6 - TB_S3: mantém informações do protocolo S3;
+3.7 - TB_CMD: mantém informações para execução de comandos ou scripts de command line (CLI);
+3.8 - TB_FORMATO: mantém informações para conversão de encode de arquivos via FTP e SCP;
+3.9 - TB_HEADER_TRAILER: mantém informações de header/trailer do arquivo;
+3.10 - TB_JCL: mantém informações para envio de scripts na linguagem JCL ao MF;
+3.11 - TB_MAIL: mantém informações para envio de email através de mensagem anexada;
+3.12 - TB_PRM: mantém informações de variáveis PRM do sistema legado;
+
+Tabelas auxiliares NÃO RELACIONADAS à tabela perfil:
+3.13 - TB_FTPUSERS: mantém informações com credenciais para autenticação via FTP no servidor destino;
+3.14 - TB_MAILGROUP: mantém informações de grupos com a lista de emails de usuários para envio de notificações;
+3.15 - TB_ROSCOE: mantém informações de chaves ROSCOE associadas a endereços de notificações;
+
+4. os campos de cada uma das tabelas acima estão descrito no arquivo "servicos_create_tables.sql", os campos (com respectivo tipo de dado) de cada tabela devem ser utilizados; 
+
+
+CRUDs básico para:
+
+a) Cadastro de PERFIL
+- CRUD para manter registro de PERFIL;
+- campos deverão ser extraídos do arquivo "servicos_create_tables.sql";
+- deverá controlar quais serviços de transferências podem estar habilitados/associados ao perfil;
+- deverá permitir UPLOAD de diagrama ou fluxograma (pdf|png|jpeg) das transferências dos arquivos relacionadas ao PERFIL, e visualização de sua prévia no modo de consulta ou edição do perfil;
+- para a exclusão do perfil:
+- estará condicionada à não existência de alguma função relacionada, ou seja, se tiver função associada, não poderá ser excluído o perfil, e uma mensagem deve ser apresentada, com funções cadastradas para aquele perfil;
+- deverá permitir o restore de perfis deletados, no menu "Histórico de Alterações";
+- após cadastrar novo perfil, deverá apresentar opções de cadastro funções de transferências ("Ações Rápidas") de acordo com as flags setadas no perfil;
+- no cadastro de perfil, o grupo de "Ações Rápidas" deve exibir todas as funcionalidades do perfil habilitadas mas não cadastradas; se houver ao menos um registro associado a determinada funcionalidade, a opção de cadastrar um novo registro para esta funcionalidade não deve ser exibida em "ações rápidas";
+- ao visualizar um perfil, mesmo que recém cadastrado, deverá exibir as informações das funcionalidades listadas logo abaixo das informações do perfil, em um agrupamento "Configurações Relacionadas".
+- funções de transferências relacionados ao perfil devem estar localizados à direita do frame em uma div separada, as funções devem estar agrupadas por Protocolos e Funcionalidades, incluindo ajuda para estes.
+
+Ações específicas para este CRUD:
+1. ao clicar no menu Perfil (Profiles):
+   - listar todos os PERFIS cadastrados em forma de tabela, com registros clicáveis.
+2. ao clicar o PERFIL desejado:
+   - listar detalhadamente informações do PERFIL, seguido de todos os registros das funções de transferências associadas ao PERFIL escolhido;
+   - exibir botão para criar novo perfil;
+   - exibir botão para duplicar perfil completo existente, com todas informações de perfil e todas as funções associadas, lembrando que o nome do perfil não pode ser igual ao já existente.
+
+
+b) Cadastro de funções RELACIONADAS:
+- CRUD para manter registros de cada tabela auxiliar relacionada a perfil previamente setado no perfil;
+- agrupados no menu "Protocolos": tabelas auxiliares TB_CD, TB_FTP, TB_SCP, TB_HTTP, TB_JASPPION e TB_S3;
+- agrupados no menu "Funcionalidades": tabelas auxiliares TB_CMD, TB_FORMATO, TB_HEADER_TRAILER, TB_JCL, TB_MAIL, TB_PRM, TB_TRADUCAO e TB_SER;
+- cada uma dessas tabelas auxiliares representam uma funcionalidade específica que requer um CRUD separadamente;
+- deverá estar associado a um PERFIL existente;
+- campo id do perfil é chave estrangeira para ID da tabela PERFIL;
+- campos deverão ser extraídos do arquivo "servicos_create_tables.sql";
+- ao cadastrar as funções, permitir somente associar aos perfis com funcionalidades habilitados no perfil;
+- listagem desta função deverá ter um campo de pesquisa pelos campos mais representativos;
+- deverá permitir o restore de funções deletadas, no menu "Histórico de Alterações".
+
+
+c) Cadastro de funções NÃO RELACIONADAS:
+- CRUD para manter registros das tabelas auxiliares não relacionadas a perfil, então, não existe uma flag para estas funções no perfil;
+- agrupados no menu "Notificações": tabelas auxiliares TB_FTPUSERS, TB_MAILGROUP, TB_ROSCOE;
+- cada uma dessas tabelas auxiliares representam uma funcionalidade específica que requer um CRUD separadamente;
+- não deverá estar associado a um PERFIL existente;
+- campos deverão ser extraídos do arquivo "servicos_create_tables.sql";
+- listagem desta função deverá ter um campo de pesquisa pelos campos mais representativos;
+- deverá permitir o restore de funções deletadas, no menu "Histórico de Alterações".
+
+
+d) Controle de acesso de usuários;
+1. permitir gerenciamento de usuários, para manter (criar, atualizar, deletar, status) usuários e senhas;
+2. controlar níveis de permissionamento (edição e leitura) sobre as tabelas: usuários básicos terão direito apenas de consulta (permissão de leitura) e usuários avançados podem cadastrar (permissão de escrita) no sistema;
+3. incluir funcionalidade no menu lateral esquerdo, no menu "Usuários";
+4. exibir usuário atualmente logado;
+5. opção de logout do usuário;
+6. iniciar aplicação com tela de autenticação de usuário.
+7. usuário básico:
+- não poderá acessar os menus de Configurações, Histórico de Alterações e Usuários; 
+8. usuário avançado:
+- terá acesso a todas as funcionalidades do sistema;
+
+
+e) Menu Configurações:
+1. informações do sistema:
+- tecnologias utilizadas (com links para linguagem python, framework flask, banco postresql, framework css bootstrap5, javascript);
+- características do sistema (breve descrição das funcionalidades);
+2. permitir gerenciar o banco de dados atual utilizado pela aplicação, com string de conexão (server, porta, schema, etc...);
+3. opção para download:
+- código fonte de todo o sistema (formato .zip)
+4. estatísticas (qtde de arquivos de código, tabelas de banco, linhas de código, versão do sistema com última compilação);
+5. documentação de todo o sistema, contendo:
+5.1. manual do usuário (em PDF):
+- visão geral do uso do sistema
+- com print de tela das principais funcionalidades
+5.2. manual do desenvolvedor:
+- descrevendo a estrutura de diretório do sistema;
+- de fácil entendimento para futura manutenção do sistema;
+- passo-a-passo para manutenção do sistema (ex: inclusão de novo campo no formulário com alterações nas camadas MVC e scripts relacionados, criação de novo CRUD);
+- deve conter comentários para os principais blocos de códigos para facilitar o entendimento do desenvolvedor que ainda está aprendendo sobre desenvolvimento web com python e frameworks de css e web.
+6. log de acessos
+- permitir rastrear acessos (datatime, usuário, ip, ação realizada, login/logout);
+
+
+f) Menu Início
+- deverá ter cards de todos os CRUDs, respeitando o nível de permissionamento por usuário (básico ou avançado), e exibindo o total de registros em cada card;
+- breve descrição do sistema;
+- atividades recentes, últimas 6 atividades do histórico de alterações, com refresh automático a cada 10 segundos;
+- deverá exibir os usuários atualmente conectados, com refresh automático a cada 10 segundos.
+
+
+g) Interface do sistema:
+Menu ESQUERDO do formulário, com as funcionalidades: 
+1. Início
+2. Perfis
+3. Protocolos
+4. Funcionalidades
+5. Notificações
+5. FAQ 
+6. Usuários
+- botões de visualização, edição e deleção
+7. Histórico de Alterações
+- campos: usuário, operação, datetime, detalhes, ip origem;
+- botão de Restore, apenas para as ações de deleção/exclusão de perfis ou funções;
+- deverá permitir filtrar por tipo de ação;
+- registrar ações de escrita/alteração para todos os CRUD, inclusive faqs e configurações; 
+- manter estatísticas para cada ação (criação, atualização, exclusão, restauração, logins, total)
+8. Configurações
+- permitir o cadastro de ocorrências na FAQ (criar, alterar, excluir, inclusão de imagens), agrupando por categoria, utilizando combo com categoria criadas;
+- registros com ícones de visualização, edição e deleção
+- ao clicar sobre o registro exibir detalhes
+9. Logout
+Lado DIREITO do formulário: 
+- frame com fundo branco para listar (filtro dinâmico, em tempo de edição) registros de perfis e funções, permitindo a manutenção destes (CRUD); 
+- com opção de paginação definindo a quantidade de registros por página em um combo;
+- total de registros da tabela de perfil ou funcionalidades;
+
+-----------
+IMPORTANTE:
+----------- 
+- tomar por base as sugestões de interface do sistema (menus, listagens, inserções, alterações), através de imagens em anexo;
+- utilizar ícones para as funções que remetem ao respectivo protocolo;
+- cuidar com a cor de fonte dos labels para não coincidirem com a cor de fundo dos frames e menu;
+- realizar todos os testes necessários de persistência de dados dos cruds (perfil, funções, usuários, faq, histórico de alterações, configurações);
+- códigos fontes devem ser simples para fácil manutenção;
+- na tela inicial deverá constar a versão 5.
+
+- os registros dos CRUDs devem ser visualizados bastando clicar sobre eles, sem a necessidade do botão de ação Visualizar.
+- os botões dos CRUDs deveriam estar no canto direito superior.
+- priorizar por um layout bem estruturado: com menu do lado esquerdo, frame do lado direito, funcionalidades agrupadas à direita do cadastro de perfil, ao visualizar um perfil exibir um agrupamento de funcionalidades logo abaixo.

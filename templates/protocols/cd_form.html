@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exchange-alt text-warning"></i> 
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select", id="perfil_select") }}
+                                {% if form.perfil_id.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.perfil_id.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Basic Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configuração Básica</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.tit.label(class="form-label") }}
+                                {{ form.tit(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.aut.label(class="form-label") }}
+                                {{ form.aut(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.dhd.label(class="form-label") }}
+                                {{ form.dhd(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.codbanco.label(class="form-label") }}
+                                {{ form.codbanco(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Job Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configuração de Job</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.job.label(class="form-label") }}
+                                {{ form.job(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.tsk.label(class="form-label") }}
+                                {{ form.tsk(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.spc.label(class="form-label") }}
+                                {{ form.spc(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.disp.label(class="form-label") }}
+                                {{ form.disp(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check mt-4">
+                                    {{ form.dmz(class="form-check-input") }}
+                                    {{ form.dmz.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configurações de Email</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mail(class="form-check-input") }}
+                                    {{ form.mail.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Ativar notificações por email</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.mailanexo(class="form-check-input") }}
+                                    {{ form.mailanexo.label(class="form-check-label") }}
+                                </div>
+                                <small class="form-text text-muted">Enviar arquivos como anexo</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailass.label(class="form-label") }}
+                                {{ form.mailass(class="form-control", placeholder="Assunto do email de notificação") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.maildest.label(class="form-label") }}
+                                {{ form.maildest(class="form-control", rows="3", placeholder="Lista de destinatários separados por vírgula ou quebra de linha") }}
+                                <small class="form-text text-muted">Ex: admin@empresa.com, usuario@empresa.com</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.mailmsg.label(class="form-label") }}
+                                {{ form.mailmsg(class="form-control", rows="4", placeholder="Mensagem personalizada do email") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Node Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configuração de Node</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.node.label(class="form-label") }}
+                                {{ form.node(class="form-control", rows="3") }}
+                                <div class="form-text">Configuração dos nodes Connect:Direct</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dataset Configuration -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Configuração de Dataset</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.dst.label(class="form-label") }}
+                                {{ form.dst(class="form-control", rows="4") }}
+                                <div class="form-text">Dataset de destino</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.dsn.label(class="form-label") }}
+                                {{ form.dsn(class="form-control", rows="4") }}
+                                <div class="form-text">Dataset name</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.dcb.label(class="form-label") }}
+                                {{ form.dcb(class="form-control", rows="3") }}
+                                <div class="form-text">Data Control Block</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Options -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-uppercase text-muted mb-3">Opções do Sistema</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.sysopts.label(class="form-label") }}
+                                {{ form.sysopts(class="form-control", rows="4") }}
+                                <div class="form-text">Opções de sistema</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.opts.label(class="form-label") }}
+                                {{ form.opts(class="form-control", rows="4") }}
+                                <div class="form-text">Opções gerais</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Salvar Configuração
+                            </button>
+                            <a href="{{ url_for('list_cd') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - Connect:Direct
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Configuração Básica:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Título:</strong> Nome da transferência</li>
+                    <li><strong>Autorização:</strong> Código de autorização</li>
+                    <li><strong>DHD:</strong> Data/hora de execução</li>
+                    <li><strong>Código do Banco:</strong> Identificação do banco</li>
+                </ul>
+                
+                <h6>Configuração de Job:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Job:</strong> Nome do job mainframe</li>
+                    <li><strong>Task:</strong> Task específica</li>
+                    <li><strong>SPC:</strong> Configuração especial</li>
+                    <li><strong>Disposição:</strong> Como tratar o arquivo</li>
+                </ul>
+                
+                <h6>Datasets:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>DST:</strong> Dataset de destino</li>
+                    <li><strong>DSN:</strong> Dataset name completo</li>
+                    <li><strong>DCB:</strong> Data Control Block</li>
+                </ul>
+                
+                <h6>Node e Opções:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Node:</strong> Configuração dos nodes</li>
+                    <li><strong>System Options:</strong> Opções do sistema</li>
+                    <li><strong>Options:</strong> Opções gerais</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <small><i class="fas fa-exclamation-triangle"></i> Connect:Direct é um protocolo enterprise da IBM para transferência segura de arquivos entre mainframes.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for profile selection with search
+    $('#perfil_select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Selecione um perfil...',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "Nenhum perfil encontrado";
+            },
+            searching: function() {
+                return "Procurando...";
+            },
+            inputTooShort: function() {
+                return "Digite para buscar";
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

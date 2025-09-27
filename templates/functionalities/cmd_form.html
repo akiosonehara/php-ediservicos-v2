@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-terminal text-dark"></i> 
+                    {{ title }}
+                </h5>
+
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.perfil_id.label(class="form-label") }}
+                                {{ form.perfil_id(class="form-select select2-profile") }}
+                                <div class="form-text">Selecione o perfil para esta configuração</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                {{ form.comando.label(class="form-label") }}
+                                {{ form.comando(class="form-control", rows="6") }}
+                                <div class="form-text">Digite o comando que será executado. Use quebras de linha para comandos múltiplos.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-dark">
+                                <i class="fas fa-save"></i> Salvar Configuração
+                            </button>
+                            <a href="{{ url_for('list_cmd') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    Ajuda - CMD
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Comandos:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Shell Commands:</strong> Execute comandos bash/shell</li>
+                    <li><strong>Scripts:</strong> Chame scripts personalizados</li>
+                    <li><strong>Programas:</strong> Execute programas externos</li>
+                </ul>
+                
+                <h6>Exemplos:</h6>
+                <div class="alert alert-info">
+                    <small>
+                        <code>cp arquivo.txt /destino/</code><br>
+                        <code>python script.py --param=valor</code><br>
+                        <code>mv *.log /logs/</code>
+                    </small>
+                </div>
+                
+                <h6>Dicas:</h6>
+                <ul class="list-unstyled small">
+                    <li>• Use caminhos absolutos quando possível</li>
+                    <li>• Teste comandos antes de salvar</li>
+                    <li>• Considere tratamento de erros</li>
+                    <li>• Use variáveis de ambiente quando necessário</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <small><i class="fas fa-exclamation-triangle"></i> Comandos são executados com privilégios do sistema. Use com cuidado.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

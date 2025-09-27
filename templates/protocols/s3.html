@@ -1,0 +1,308 @@
+
+{% extends "base.html" %}
+
+{% block page_title %}Configurações S3{% endblock %}
+
+{% block page_actions %}
+{% if current_user.is_advanced() %}
+<a href="{{ url_for('create_s3') }}" class="btn btn-warning">
+    <i class="fas fa-plus"></i> Nova Configuração
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form method="GET" class="d-flex align-items-center">
+                <input type="text" name="search" class="form-control me-2" placeholder="Buscar por perfil, bucket ou endpoint..." value="{{ search }}" id="search-input">
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                {% if search %}
+                <a href="{{ url_for('list_s3') }}" class="btn btn-outline-danger ms-2">
+                    <i class="fas fa-times"></i>
+                </a>
+                {% endif %}
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <form method="GET" class="d-inline">
+                {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+                <select name="per_page" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                    <option value="10" {% if request.args.get('per_page', '10') == '10' %}selected{% endif %}>10 por página</option>
+                    <option value="25" {% if request.args.get('per_page', '10') == '25' %}selected{% endif %}>25 por página</option>
+                    <option value="50" {% if request.args.get('per_page', '10') == '50' %}selected{% endif %}>50 por página</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fab fa-aws text-warning"></i> 
+                Configurações S3
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if configs.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Perfil</th>
+                            <th>Endpoint</th>
+                            <th>Bucket</th>
+                            <th>Ação</th>
+                            <th>Região</th>
+                            <th>DMZ</th>
+                            <th class="text-end" width="120">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s3_config, perfil in configs.items %}
+                        <tr style="cursor: pointer;" onclick="viewS3Config({{ s3_config.id_s3 }})">
+                            <td>
+                                <a href="{{ url_for('view_profile', id=perfil.id_perfil) }}" class="text-decoration-none" onclick="event.stopPropagation();">
+                                    <strong>{{ perfil.perfil }}</strong>
+                                </a>
+                            </td>
+                            <td>{{ s3_config.endpointurl or '-' }}</td>
+                            <td>{{ s3_config.bucketname or '-' }}</td>
+                            <td>
+                                {% if s3_config.action %}
+                                <span class="badge bg-info">{{ s3_config.action }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>{{ s3_config.region or '-' }}</td>
+                            <td>
+                                {% if s3_config.dmz %}
+                                <span class="badge bg-danger">DMZ</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-info" title="Visualizar" onclick="event.stopPropagation(); viewS3Config({{ s3_config.id_s3 }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    {% if current_user.is_advanced() %}
+                                    <button class="btn btn-sm btn-outline-warning" title="Editar" onclick="event.stopPropagation(); editS3Config({{ s3_config.id_s3 }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" title="Deletar" onclick="event.stopPropagation(); deleteS3Config({{ s3_config.id_s3 }}, '{{ perfil.perfil }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if configs.pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if configs.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_s3', page=configs.prev_num, per_page=request.args.get('per_page', 10), search=search) }}">Anterior</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in configs.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != configs.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('list_s3', page=page_num, per_page=request.args.get('per_page', 10), search=search) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if configs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('list_s3', page=configs.next_num, per_page=request.args.get('per_page', 10), search=search) }}">Próximo</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            <div class="text-center text-muted">
+                <small>Total de registros: {{ configs.total }} | Página {{ configs.page }} de {{ configs.pages }}</small>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fab fa-aws fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhuma configuração S3 encontrada</h5>
+                {% if search %}
+                <p>Tente ajustar os termos de busca.</p>
+                <a href="{{ url_for('list_s3') }}" class="btn btn-outline-secondary">Limpar Busca</a>
+                {% else %}
+                <p>Comece criando sua primeira configuração S3.</p>
+                {% if current_user.is_advanced() %}
+                <a href="{{ url_for('create_s3') }}" class="btn btn-warning">
+                    <i class="fas fa-plus"></i> Criar Primeira Configuração
+                </a>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- S3 Configuration Modal -->
+<div class="modal fade" id="s3ConfigModal" tabindex="-1" aria-labelledby="s3ConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="s3ConfigModalLabel">Configuração S3</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="s3ConfigContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a configuração S3 do perfil <strong id="configToDelete"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Esta ação não pode ser desfeita, mas pode ser restaurada através do histórico de alterações.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewS3Config(configId) {
+    fetch(`/protocolos/s3/${configId}/view`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Perfil:</strong> ${data.perfil}<br>
+                        <strong>Bucket:</strong> ${data.bucketname}<br>
+                        <strong>Região:</strong> ${data.region}<br>
+                        <strong>Access Key:</strong> ${data.accesskey}<br>
+                        <strong>Secret Key:</strong> ${data.secretkey ? '***' : '-'}<br>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Endpoint URL:</strong> ${data.endpointurl || '-'}<br>
+                        <strong>Action:</strong> <span class="badge bg-info">${data.action || 'GET'}</span><br>
+                        <strong>Folder:</strong> ${data.foldername || '-'}<br>
+                        <strong>File Name:</strong> ${data.filename || '-'}<br>
+                        <strong>DMZ:</strong> ${data.dmz ? '<span class="badge bg-danger">Sim</span>' : '<span class="text-muted">Não</span>'}<br>
+                    </div>
+                </div>
+                ${data.mail ? `
+                <hr>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6 class="text-info mb-3">
+                            <i class="fas fa-envelope"></i> Configurações de Email
+                        </h6>
+                        <strong>Assunto:</strong> ${data.mailass || '-'}<br>
+                        <strong>Anexo:</strong> ${data.mailanexo ? '<span class="text-success">Sim</span>' : '<span class="text-muted">Não</span>'}<br>
+                        ${data.mailmsg ? `
+                        <div class="mt-2 mb-2">
+                            <strong>Mensagem:</strong><br>
+                            <div class="border p-2 bg-light rounded" style="max-height: 150px; overflow-y: auto;">
+                                ${data.mailmsg.replace(/\\n/g, '<br>')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        <strong>Destinatários:</strong><br>
+                        <div class="bg-white p-2 border rounded" style="max-height: 100px; overflow-y: auto;">
+                            ${data.maildest ? data.maildest.split('\\n').map(email => email.trim()).filter(email => email).map(email => `<div class="mb-1">${email}</div>`).join('') : '<span class="text-muted">Nenhum destinatário</span>'}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('s3ConfigContent').innerHTML = content;
+            const modalElement = document.getElementById('s3ConfigModal');
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+            }
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar configuração:', error);
+            alert('Erro ao carregar configuração S3');
+        });
+}
+
+function editS3Config(configId) {
+    window.location.href = `/protocolos/s3/${configId}/editar`;
+}
+
+function deleteS3Config(configId, perfilName) {
+    document.getElementById('configToDelete').textContent = perfilName;
+    document.getElementById('deleteForm').action = `/protocolos/s3/${configId}/deletar`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Auto-submit search form on typing (with debounce)
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 500);
+});
+
+// Clear modal content when hidden to prevent conflicts
+document.getElementById('s3ConfigModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('s3ConfigContent').innerHTML = '';
+});
+</script>
+{% endblock %}
